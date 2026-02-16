@@ -12,6 +12,7 @@
 <div class="buttons">
   <button class="To-Be-Watched">To Be Watched</button>
   <button class="Favorites">Favorites</button>
+  <button class="My-List">My List</button>
   <button class="Description">Description</button>
   <button class="Where-To-Watch">Where To Watch</button>
 </div>
@@ -226,6 +227,7 @@ const videoContainer = document.getElementById("videoContainer"); // finds eleme
 // detect so can control them later on.
 const favoritesBtn = document.querySelector(".Favorites");
 const watchedBtn = document.querySelector(".To-Be-Watched");
+const myListBtn = document.querySelector(".My-List");
 const descriptionBtn = document.querySelector(".Description");
 const descriptionBox = document.getElementById("descriptionBox");
 const whereToWatchBtn = document.querySelector(".Where-To-Watch");
@@ -408,60 +410,55 @@ whereToWatchBtn.addEventListener("click", () => {
    SHOW LISTS
 ======================= */
 
-const showList = (key) => { 
-  const items = getFromLocalStorage(key); // gets the list of movie ids from local storage based on the key (favorites or watched).
+myListBtn.addEventListener("click", () => {
+  const favorites = getFromLocalStorage("favorites");
+  const watched = getFromLocalStorage("watched");
 
-  listBox.innerHTML = ""; // clears the list box before displaying the new list.
+  listBox.innerHTML = ""; // clear old content
 
-  if (items.length === 0) { 
-    listBox.innerHTML = "<p>No movies saved yet.</p>";
+  // === Favorites Section ===
+  const favTitle = document.createElement("h2");
+  favTitle.textContent = "Favorites";
+  listBox.appendChild(favTitle);
+
+  if (favorites.length === 0) {
+    listBox.innerHTML += "<p>No favorites yet.</p>";
   } else {
-    const ul = document.createElement("ul"); // creates an unordered list element to hold the list of movies.
-
-    items.forEach(id => { 
-      const movie = movies.find(m => m.id === id); /* finds the movie object in the movies array that matches the id from local storage. 
-      this is needed to get the title of the movie to display in the list.*/
-      const li = document.createElement("li"); // creates a list item element for each movie in the favorites/watched list.
-      li.textContent = movie ? movie.title : id; // if movie is found, use its title. if not found (which shouldn't happen), just display the id as a fallback.
-      ul.appendChild(li); 
+    const favList = document.createElement("ul");
+    favorites.forEach(id => {
+      const movie = movies.find(m => m.id === id);
+      const li = document.createElement("li");
+      li.textContent = movie ? movie.title : id;
+      favList.appendChild(li);
     });
-
-    listBox.appendChild(ul);// adds the list of movies to the list box dropdown.
+    listBox.appendChild(favList);
   }
 
-  listBox.classList.toggle("open"); // toggles the list box to show/hide the list of movies in either favorites or watched based on the key passed to the function.
-  descriptionBox.classList.remove("open");
-  whereToWatchBox.classList.remove("open"); 
-};
+  // === Watched Section ===
+  const watchedTitle = document.createElement("h2");
+  watchedTitle.textContent = "To Be Watched";
+  listBox.appendChild(watchedTitle);
 
-let pressTimer;
+  if (watched.length === 0) {
+    listBox.innerHTML += "<p>No saved movies yet.</p>";
+  } else {
+    const watchedList = document.createElement("ul");
+    watched.forEach(id => {
+      const movie = movies.find(m => m.id === id);
+      const li = document.createElement("li");
+      li.textContent = movie ? movie.title : id;
+      watchedList.appendChild(li);
+    });
+    listBox.appendChild(watchedList);
+  }
 
-const toggleDropdown = (key) => {
-  showList(key);
-};
+  // show panel
+  listBox.classList.toggle("show");
 
-favoritesBtn.addEventListener("touchstart", () => {
-  pressTimer = setTimeout(() => {
-    toggleDropdown("favorites");
-  }, 500); // 500ms hold
+  // close others
+  descriptionBox.classList.remove("show");
+  whereToWatchBox.classList.remove("show");
 });
-
-favoritesBtn.addEventListener("touchend", () => {
-  clearTimeout(pressTimer);
-});
-
-watchedBtn.addEventListener("touchstart", () => {
-  pressTimer = setTimeout(() => {
-    toggleDropdown("watched");
-  }, 500); // 500ms hold
-});
-
-watchedBtn.addEventListener("touchend", () => {
-  clearTimeout(pressTimer);
-});
-  
-/* favoritesBtn.addEventListener("dblclick", () => showList("favorites")); // double click show list.
-watchedBtn.addEventListener("dblclick", () => showList("watched")); on phones double clicks zoom in so changed it */
 
 
 /* =======================
@@ -540,7 +537,7 @@ video {
   border: 1px solid rgba(255,255,255,0.2);
   color: white;
   padding: 12px 24px;
-  font-size: 14px;
+  font-size: 25px;
   letter-spacing: 1px;
   text-transform: uppercase;
   border-radius: 50px;
@@ -556,6 +553,24 @@ video {
   background: #e50914;
   border-color: #e50914;
   box-shadow: 0 0 20px rgba(229, 9, 20, 0.6);
+}
+
+#listBox h2 {
+  margin-top: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+#listBox ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+#listBox li {
+  padding: 8px 0;
+  font-size: 25px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 /* =======================
@@ -575,7 +590,7 @@ video {
   border-radius: 12px;
   padding: 30px;
   color: white;
-  font-size: 18px;
+  font-size: 25px;
   line-height: 1.8;
   display: none;
   z-index: 9998;
