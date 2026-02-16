@@ -273,12 +273,12 @@ loadAllTrailers(); // apply function to load trailers on page load.
    SELECT ACTIVE MOVIE
 ======================= */
 
-videoContainer.addEventListener("click", (e) => {
+videoContainer.addEventListener("play", (e) => { // click doesn't work for phones hence the play
   if (e.target.tagName === "VIDEO") {
     activeMovieId = e.target.dataset.movieId; // which movie is active based on click.
     updateButtonStates(); // update button states based on active movie and local storage.
   }
-});
+}, true);
 
 
 /* =======================
@@ -519,3 +519,4 @@ button.active {
 </body>
 
 </html>
+
