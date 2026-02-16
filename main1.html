@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Movie App</title>
+</head>
+
+<body>
+
+<div id="videoContainer"></div> <!-- so detect later on -->
+
+<div class="buttons">
+  <button class="To-Be-Watched">To Be Watched</button>
+  <button class="Favorites">Favorites</button>
+  <button class="Description">Description</button>
+  <button class="Where-To-Watch">Where To Watch</button>
+</div>
+
+<div id="descriptionBox" class="dropdown"></div>
+<div id="whereToWatchBox" class="dropdown"></div>
+<div id="listBox" class="dropdown"></div>
+
+<script>
+
+/* =======================
+   MOVIE DATA
+======================= */
+
+const movies = [ // arry multiple trailers. 
+  {
+    id: "Airport",
+    title: "Airport",
+    genre: "Action, Drama, Thriller",
+    description: "Movie. \n Melodrama about a bomber on board an airplane, an airport almost closed by snow, and various personal problems of the people involved. Great casting if interested in old 70s films.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/Airport.mp4", ]
+  },
+
+  {
+    id: "Mash",
+    title: "Mash",
+    genre: "War & Politics, Drama, Comedy",
+    description: "Tv show: \n 11 seasons \n 24 eps \n duration 25 min \n \n The 4077th Mobile Army Surgical Hospital is stuck in the middle of the Korean war. With little help from the circumstances they find themselves in, they are forced to make their own fun. Fond of practical jokes and revenge, the doctors, nurses, administrators, and soldiers often find ways of making wartime life bearable. Its old timey funny. I will be watching as a filler between other shows.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/Mash.mp4", "trailers/MASH1.mp4"]
+  },
+
+  {
+    id: "Patton",
+    title: "Patton",
+    genre: "Drama, History, War",
+    description: "Movie. \n tells the tale of General George S. Patton, famous tank commander of World War II. The film begins with Patton's career in North Africa and progresses through the invasion of Germany and the fall of the Third Reich. Side plots also speak of Patton's numerous faults such his temper and habit towards insubordination. A lot of people have said it has a good soundtrack. ",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/Patton.mp4", ]
+  },
+
+  {
+    id: "Five-Easy-Pieces",
+    title: "Five Easy Pieces",
+    genre: "Drama",
+    description: "Movie. \n A drop-out from upper-class America picks up work along the way on oil-rigs when his life isn't spent in a squalid succession of bars, motels, and other points of interest. It has great acting.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/FiveEasyPieces.mp4", ]
+  },
+
+  {
+    id: "Little-Big-Man",
+    title: "Little Big Man",
+    genre: "Adventure, Western, Comedy, Drama",
+    description: "Movie. \n Jack Crabb, looking back from extreme old age, tells of his life being raised by Indians and fighting with General Custer. This movie has swayed off of American vs Indian which was common for the 1970 and it did so with a great balance to comedy. I have found it entertaining and I will definitely be watching it.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/Little-Big-Man.mp4", "trailers/Little-Big-Man1.mp4"]
+  },
+
+  {
+    id: "The-Aristocats",
+    title: "The Aristocats",
+    genre: "Animation, Comedy, Family",
+    description: "Movie. \n When Madame Adelaide Bonfamille leaves her fortune to Duchess and her children—Bonfamille's beloved family of cats—the butler plots to steal the money and kidnaps the legatees, leaving them out on a country road. All seems lost until the wily Thomas O'Malley Cat and his jazz-playing alley cats come to the aristocats' rescue. All I can say is I like it and I will be watching it when I'm bored.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/The-Aristocats.mp4" , "trailers/TheAristocats1.mp4"]
+  },
+
+  {
+    id: "Catch-22",
+    title: "Catch 22",
+    genre: "War, Comedy, Drama",
+    description: "Movie. \n A bombardier in World War II tries desperately to escape the insanity of the war. However, sometimes insanity is the only sane way to cope with a crazy situation.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/Catch-22.mp4",]
+  },
+
+  {
+    id: "Catch-22-2019",
+    title: "Catch-22-2019",
+    genre: "Comedy, Drama, War & Politics",
+    description: "Tv show: \n 1 season \n 6 eps \n duration 45 min \n\n Pianosa Island, Italy, World War II. Bombardier John Yossarian tries to fulfill his duty, maintain sanity and return home as soon as possible, but incompetence and bureaucracy constantly stand in his way. I will definitely be watching it seems fun.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: [ "trailers/Catch-22-2019.mp4", ]
+  },
+
+  {
+    id: "Star-Wars",
+    title: "Star Wars: Episode V - The Empire Strikes Back",
+    genre: "Sci-Fi, Adventure",
+    description: " Movie. \n The adventure continues in this 'Star Wars' sequel. Luke Skywalker (Mark Hamill), Han Solo (Harrison Ford), Princess Leia (Carrie Fisher) and Chewbacca (Peter Mayhew) face attack by the Imperial forces and its AT-AT walkers on the ice planet Hoth. While Han and Leia escape in the Millennium Falcon, Luke travels to Dagobah in search of Yoda. Only with the Jedi master's help will Luke survive when the dark side of the Force beckons him into the ultimate duel with Darth Vader (David Prowse). Honestly I have been wanting to watch it for the longest time it seems interesting. ",
+    whereToWatch: "This can be watched on Disney Plus.",
+    trailers: [ "trailers/Star-Wars5.mp4",]
+
+  },
+
+  {
+    id: "The-Shining",
+    title: "The Shining",
+    genre: "Horror, Thriller",
+    description: "Movie. \n Jack Torrance accepts a caretaker job at the Overlook Hotel, where he, along with his wife Wendy and their son Danny, must live isolated from the rest of the world for the winter. But they aren't prepared for the madness that lurks within. A classic I have been putting off. It is not the modern type of obvious fear and horror. It is more mental than I am running at you with a knife type of horror.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/The-Shining.mp4","trailers/The-Shining1.mp4"] 
+  },
+
+  {
+    id: "Raging-Bull",
+    title: "Raging Bull",
+    genre: "Drama/Biopic",
+    description: "Movie. \n When Jake LaMotta steps into a boxing ring and obliterates his opponent, he's a prizefighter. But when he treats his family and friends the same way, he's a ticking time bomb, ready to go off at any moment. Though LaMotta wants his family's love, something always seems to come between them. Perhaps it's his violent bouts of paranoia and jealousy. This kind of rage helped make him a champ, but in real life, he winds up in the ring alone. It is not my cup of tea but I can confidently that the acting is very well done and the setting depicts the vibe accurately.",  
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/Raging-Bull.mp4",]
+  },
+
+  {
+    id: "Airplane",
+    title: "Airplane!",
+    genre: "Comedy",
+    description: "Movie. \n Alcoholic pilot, Ted Striker has developed a fear of flying due to wartime trauma, but nevertheless boards a passenger jet in an attempt to woo back his stewardess girlfriend. Food poisoning decimates the passengers and crew, leaving it up to Striker to land the plane with the help of a glue-sniffing air traffic controller and Striker's vengeful former Air Force captain, who must both talk him down. The misunderstandings are hilarious and the only reason I will be watching this movie.", 
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/Airplane.mp4",]
+  },
+
+  {
+    id: "Ordinary-People",
+    title: "Ordinary People",
+    genre: "Drama",
+    description: "Movie. \n Beth, Calvin, and their son Conrad are living in the aftermath of the death of the other son. Conrad is overcome by grief and misplaced guilt to the extent of a suicide attempt. He is in therapy. Beth had always preferred his brother and is having difficulty being supportive to Conrad. Calvin is trapped between the two trying to hold the family together.It seems sad and I'm honestly interested in how they display their broken relationship.", 
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/Ordinary-People.mp4"]
+  },
+
+  {
+    id: "The-Elephant-Man",
+    title: "The Elephant Man",
+    genre: "Drama, History",
+    description: "Movie. \n A Victorian surgeon rescues a heavily disfigured man being mistreated by his 'owner' as a side-show freak. Behind his monstrous façade, there is revealed a person of great intelligence and sensitivity. Based on the true story of Joseph Merrick (called John Merrick in the film), a severely deformed man in 19th century London. Honestly the acting seems very well done and I don't see that type of sadness in modern movies. Also if you don't like black and white movies with bad quality don't watch this.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/The-Elephant-Man.mp4"]
+  },
+
+  {
+    id: "The-Blues-Brothers", 
+    title: "The Blues Brothers",
+    genre: "Music, Comedy, Action, Crime",
+    description: "Movie. \n Jake Blues is just out of jail, and teams up with his brother, Elwood on a 'mission from God' to raise funds for the orphanage in which they grew up. The only thing they can do is do what they do best: play music. So they get their old band together, and set out on their way—while getting in a bit of trouble here and there. Hilarious, I am definitely watching this. A lot have said if you like it then you will be rewatching it, it's that type of movie.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/The-Blues-Brothers.mp4", "trailers/The-Blues-Brothers1.mp4"]
+  },
+
+  {
+    id: "Kagemusha-The-Shadow-Warrior",
+    title: "Kagemusha: The Shadow Warrior",
+    genre: "Action, Drama, History, War",
+    description: "Movie. \n Akira Kurosawa's lauded feudal epic presents the tale of a petty thief who is recruited to impersonate Shingen, an aging warlord, in order to avoid attacks by competing clans. When Shingen dies, his generals reluctantly agree to have the impostor take over as the powerful ruler. He soon begins to appreciate life as Shingen, but his commitment to the role is tested when he must lead his troops into battle against the forces of a rival warlord. The visuals are amazing and not only for its time. Now most have Netflix lighting and AI filters it's really amazing to watch a movie with those visuals without AI.",
+    whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
+    trailers: ["trailers/Kagemusha-The-Shadow-Warrior.mp4"]
+  },
+
+];
+
+
+/* =======================
+   RECOMMENDATION LOGIC
+======================= */
+
+const getFavorites = () => {
+  return JSON.parse(localStorage.getItem("favorites")) || [];
+}; /* this is a helper function to get the favorites list from local storage. it returns an empty array if there are no favorites saved. 
+this is used to check if a movie is already in favorites and to display the list of favorites. */
+
+
+const getRecommendedMovies = () => {
+  const favorites = getFavorites(); // gets list of favorite movie ids from local storage. this is needed to determine which genres the user likes based on their 
+  // favorites and to recommend similar movies.
+
+  if (favorites.length === 0) {
+    return movies.sort(() => 0.5 - Math.random()); /* if no favorites, return a random selection of movies. 
+    this is a simple way to show some content to the user when they haven't interacted with the app yet. 
+    it shuffles the movies array and returns it. */
+  }
+
+  const favoriteGenres = movies
+    .filter(movie => favorites.includes(movie.id)) // filters the movies to only those that are in the favorites list based on their id. this gives us the movie objects
+    //  that the user has favorited.
+    .map(movie => movie.genre); // then maps those movie objects to their genres. this gives us a list of genres that the user likes based on their favorites.
+
+  const recommended = movies.filter(movie => /* filters the movies to find recommendations. the criteria for recommendation is that the movie's genre is in the user's
+   favorite genres and that the movie is not already in the favorites list. this ensures that we recommend movies that are similar
+    to what the user likes but that they haven't already favorited. */
+    favoriteGenres.includes(movie.genre) && // checks if the movie's genre is in the list of favorite genres.
+    !favorites.includes(movie.id) // checks if the movie is not already in the favorites list.
+  );
+
+  return recommended;
+};
+
+
+/* =======================
+   GLOBAL STATE
+======================= */
+
+// FIRST TIME ALERT 
+// criteria: visual appeal.
+if (!localStorage.getItem("introAlertShown")) { // checks if alert hasn't been shown before. if not it shows alert.
+  alert(
+    "⚠️ IMPORTANT:\n\n" +
+    "You must CLICK a video first before adding it to Favorites, To Be Watched, or viewing the Description.\n\n" +
+    "• Single click on Favorites or To Be Watched add the film. \n" +
+    "• Double click button = View saved list"
+  );
+
+  localStorage.setItem("introAlertShown", "true"); // next time user open alert not shown.
+}
+
+
+let activeMovieId = null; // tracks which movie is currently active/selected. This is crucial for button actions and description display.
+const videoContainer = document.getElementById("videoContainer"); // finds element.
+
+// detect so can control them later on.
+const favoritesBtn = document.querySelector(".Favorites");
+const watchedBtn = document.querySelector(".To-Be-Watched");
+const descriptionBtn = document.querySelector(".Description");
+const descriptionBox = document.getElementById("descriptionBox");
+const whereToWatchBtn = document.querySelector(".Where-To-Watch");
+const whereToWatchBox = document.getElementById("whereToWatchBox");
+const listBox = document.getElementById("listBox");
+
+
+/* =======================
+   LOAD ALL TRAILERS
+======================= */
+
+const loadAllTrailers = () => {
+  videoContainer.innerHTML = "";
+
+  movies.forEach(movie => { // loops movies in their arrays.
+    movie.trailers.forEach(trailerPath => { // same but for trailers.
+      const video = document.createElement("video"); // creates a video element for each trailer.
+
+      video.src = trailerPath; // sets video source to the trailer path.
+      video.controls = true; // adds video controls (play, pause, etc.) to the video element.
+      video.style.width = "100%"; // adjusts video to screen size.
+      video.style.marginBottom = "20px"; 
+
+      // attach movie id to video. which is for which.
+      video.dataset.movieId = movie.id;
+
+      videoContainer.appendChild(video); // video on page.
+    });
+  });
+};
+
+loadAllTrailers(); // apply function to load trailers on page load.
+
+
+/* =======================
+   SELECT ACTIVE MOVIE
+======================= */
+
+videoContainer.addEventListener("click", (e) => {
+  if (e.target.tagName === "VIDEO") {
+    activeMovieId = e.target.dataset.movieId; // which movie is active based on click.
+    updateButtonStates(); // update button states based on active movie and local storage.
+  }
+});
+
+
+/* =======================
+   LOCAL STORAGE
+======================= */
+
+const saveToLocalStorage = (key, value) => { // value is movie id. key is either favorites or watched. This adds to local storage without overwriting existing data.
+  const existing = JSON.parse(localStorage.getItem(key)) || []; // reads data.
+
+  if (!existing.includes(value)) { // only add if not already there.
+    existing.push(value); // adds new value to array.
+    localStorage.setItem(key, JSON.stringify(existing)); // saves back to local storage.
+  }
+};
+
+const removeFromLocalStorage = (key, value) => {
+  let existing = JSON.parse(localStorage.getItem(key)) || []; /* reads data from local storage. if there is no data, it returns an empty array.
+   this is used to get the current list of favorites or watched movies so we can remove a movie from that list when unfavoriting or marking as unwatched. */
+  existing = existing.filter(item => item !== value); // removes the value from the array.
+  localStorage.setItem(key, JSON.stringify(existing)); /* saves the updated array back to local storage. this is used to update the favorites or watched list
+   in local storage after removing a movie from it.*/
+};
+
+const getFromLocalStorage = (key) => { 
+  return JSON.parse(localStorage.getItem(key)) || []; /* this is a helper function to get data from local storage. 
+  it takes a key (favorites or watched) and returns the corresponding list of movie ids.*/
+};
+
+
+/* =======================
+   BUTTON STATE UPDATE
+======================= */
+
+const updateButtonStates = () => {
+  if (!activeMovieId) return; // if no active movie, do nothing. this prevents errors when clicking buttons without selecting a movie first.
+
+  const favorites = getFromLocalStorage("favorites"); // gets current favorites list from local storage.
+  const watched = getFromLocalStorage("watched");
+
+  // toggle active class based on whether active movie is in favorites/watched lists. visuals criteria, smooth.
+  favoritesBtn.classList.toggle("active", favorites.includes(activeMovieId)); // if active movie is in favorites, add active class. if not, remove it.
+  watchedBtn.classList.toggle("active", watched.includes(activeMovieId));
+};
+
+
+/* =======================
+   FAVORITES BUTTON
+======================= */
+
+
+/* when favorites button is clicked, it checks if there is an active movie. if there is, it gets the current list of favorites from local storage. 
+then it checks if the active movie is already in the favorites list. if it is, it removes it (unfavorite). if it's not, it adds it to the list (favorite).*/
+
+favoritesBtn.addEventListener("click", () => { 
+  if (!activeMovieId) return; // if no active movie, do nothing.
+
+  const favorites = getFromLocalStorage("favorites"); // gets current favorites list from local storage.
+
+  if (favorites.includes(activeMovieId)) { // if already in favorites, remove it (unfavorite).
+    removeFromLocalStorage("favorites", activeMovieId);
+  } else {
+    saveToLocalStorage("favorites", activeMovieId); 
+  }
+
+  updateButtonStates(); // update button states to reflect the change in favorites.
+});
+
+
+/* =======================
+   WATCHED BUTTON
+======================= */
+
+watchedBtn.addEventListener("click", () => { 
+  if (!activeMovieId) return;
+
+  const watched = getFromLocalStorage("watched");
+
+  if (watched.includes(activeMovieId)) {
+    removeFromLocalStorage("watched", activeMovieId);
+  } else {
+    saveToLocalStorage("watched", activeMovieId);
+  }
+
+  updateButtonStates();
+});
+
+
+/* =======================
+   DESCRIPTION BUTTON
+======================= */
+
+descriptionBtn.addEventListener("click", () => { /* when description button is clicked, it checks if there is an active movie. if there is, 
+  it finds the movie object based on the active movie id.*/
+  if (!activeMovieId) return; // if no active movie, do nothing.
+
+  const movie = movies.find(m => m.id === activeMovieId); // finds the movie object in the movies array that matches the active movie id. 
+  // this is needed to get the description of the active movie to display it.
+
+ descriptionBox.innerHTML = `<p>${movie.description.replace(/\n/g, "<br>")}</p>`; /* sets the content of the description box to the description of the active movie. */
+  descriptionBox.classList.toggle("open"); // toggles the description box to show/hide the description.
+
+  whereToWatchBox.classList.remove("open");
+  listBox.classList.remove("open");
+});
+
+
+/* =======================
+  Where To Watch BUTTON
+======================= */
+
+whereToWatchBtn.addEventListener("click", () => { 
+  if (!activeMovieId) return;
+
+  const movie = movies.find(m => m.id === activeMovieId); // finds the movie object in the movies array that matches the active movie id. this is needed to get the whereToWatch info of the active movie to display it.
+
+  whereToWatchBox.innerHTML = `<p>${movie.whereToWatch}</p>`; // sets the content of the where to watch box to the whereToWatch property of the active movie. basically shows.
+  whereToWatchBox.classList.toggle("open");
+
+  descriptionBox.classList.remove("open"); // close description if open.
+  listBox.classList.remove("open"); // close other dropdowns if open.
+});
+
+
+/* =======================
+   SHOW LISTS
+======================= */
+
+const showList = (key) => { 
+  const items = getFromLocalStorage(key); // gets the list of movie ids from local storage based on the key (favorites or watched).
+
+  listBox.innerHTML = ""; // clears the list box before displaying the new list.
+
+  if (items.length === 0) { 
+    listBox.innerHTML = "<p>No movies saved yet.</p>";
+  } else {
+    const ul = document.createElement("ul"); // creates an unordered list element to hold the list of movies.
+
+    items.forEach(id => { 
+      const movie = movies.find(m => m.id === id); /* finds the movie object in the movies array that matches the id from local storage. 
+      this is needed to get the title of the movie to display in the list.*/
+      const li = document.createElement("li"); // creates a list item element for each movie in the favorites/watched list.
+      li.textContent = movie ? movie.title : id; // if movie is found, use its title. if not found (which shouldn't happen), just display the id as a fallback.
+      ul.appendChild(li); 
+    });
+
+    listBox.appendChild(ul);// adds the list of movies to the list box dropdown.
+  }
+
+  listBox.classList.toggle("open"); // toggles the list box to show/hide the list of movies in either favorites or watched based on the key passed to the function.
+  descriptionBox.classList.remove("open");
+  whereToWatchBox.classList.remove("open"); 
+};
+
+favoritesBtn.addEventListener("dblclick", () => showList("favorites")); // double click show list.
+watchedBtn.addEventListener("dblclick", () => showList("watched"));
+
+
+/* =======================
+   CLICK OUTSIDE CLOSE
+======================= */
+
+document.addEventListener("click", (event) => {
+
+  const clickedInsideList = listBox.contains(event.target); // checks if the click was inside the list box. if it was, we don't want to close the dropdown.
+  const clickedInsideDescription = descriptionBox.contains(event.target); // checks if the click was inside the description box. if it was, we don't want to close the dropdown.
+  const clickedInsideWhere = whereToWatchBox.contains(event.target); 
+  const clickedButton = event.target.closest(".buttons"); // same but for buttons. if click on button then no close.
+
+  if (!clickedInsideList && !clickedInsideDescription && !clickedInsideWhere && !clickedButton) { // if the click was outside of all dropdowns and buttons, then it closes any open dropdowns.
+    listBox.classList.remove("open"); // close list if open.
+    descriptionBox.classList.remove("open"); 
+    whereToWatchBox.classList.remove("open");
+  }
+});
+
+</script>
+
+
+<style>
+
+body {
+  margin: 0;
+  background: black;
+  font-family: Arial, sans-serif;
+}
+
+.buttons {
+  position: fixed; /* keeps the buttons in a fixed position on the screen even when scrolling. */
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%); /* centers the buttons horizontally on the page regardless of screen size. */
+  display: flex;
+  gap: 20px;
+  z-index: 1000; /* keeps them above the video */
+}
+
+.buttons button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.buttons button:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+button.active {
+  color: #4caf96;
+  opacity: 1;
+}
+
+.dropdown {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%); /* centers the dropdown horizontally on the page. */
+  width: 80%;
+  max-height: 0;
+  overflow: hidden;
+  background: rgba(0,0,0,0.9);
+  color: white;
+  border-radius: 8px;
+  padding: 0 20px;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  z-index: 999;
+}
+
+.dropdown.open {
+  max-height: 100%;
+  padding: 20px;
+}
+
+</style>
+</body>
+</html>
