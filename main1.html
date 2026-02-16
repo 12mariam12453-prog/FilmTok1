@@ -212,8 +212,8 @@ const getRecommendedMovies = () => {
 if (!localStorage.getItem("introAlertShown")) { // checks if alert hasn't been shown before. if not it shows alert.
   alert(
     "⚠️ IMPORTANT:\n\n" +
-    "You must CLICK a video first before adding it to Favorites, To Be Watched, viewing the Description or Where To Watch \n\n" +
-    "• Single click on Favorites or To Be Watched adds the film. \n" +
+    "You must CLICK a video first before adding it to Favorites, To Be Watched, or viewing the Description.\n\n" +
+    "• Single click on Favorites or To Be Watched add the film. \n" 
   );
 
   localStorage.setItem("introAlertShown", "true"); // next time user open alert not shown.
@@ -536,7 +536,7 @@ video {
   border: 1px solid rgba(255,255,255,0.2);
   color: white;
   padding: 12px 24px;
-  font-size: 22px;
+  font-size: 23px;
   letter-spacing: 1px;
   text-transform: uppercase;
   border-radius: 50px;
@@ -608,5 +608,3 @@ video {
 </body>
 
 </html>
-
-
