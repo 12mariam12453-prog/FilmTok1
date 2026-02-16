@@ -423,8 +423,34 @@ const showList = (key) => {
   whereToWatchBox.classList.remove("open"); 
 };
 
-favoritesBtn.addEventListener("dblclick", () => showList("favorites")); // double click show list.
-watchedBtn.addEventListener("dblclick", () => showList("watched"));
+let pressTimer;
+
+const toggleDropdown = (key) => {
+  showList(key);
+};
+
+favoritesBtn.addEventListener("touchstart", () => {
+  pressTimer = setTimeout(() => {
+    toggleDropdown("favorites");
+  }, 500); // 500ms hold
+});
+
+favoritesBtn.addEventListener("touchend", () => {
+  clearTimeout(pressTimer);
+});
+
+watchedBtn.addEventListener("touchstart", () => {
+  pressTimer = setTimeout(() => {
+    toggleDropdown("watched");
+  }, 500); // 500ms hold
+});
+
+watchedBtn.addEventListener("touchend", () => {
+  clearTimeout(pressTimer);
+});
+  
+/* favoritesBtn.addEventListener("dblclick", () => showList("favorites")); // double click show list.
+watchedBtn.addEventListener("dblclick", () => showList("watched")); on phones double clicks zoom in so changed it */
 
 
 /* =======================
@@ -511,6 +537,7 @@ button.active {
 </body>
 
 </html>
+
 
 
 
