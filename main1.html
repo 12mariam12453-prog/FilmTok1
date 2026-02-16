@@ -10,9 +10,9 @@
 <div id="videoContainer"></div> <!-- so detect later on -->
 
 <div class="buttons">
+  <button class="My-List">My List</button>
   <button class="To-Be-Watched">To Be Watched</button>
   <button class="Favorites">Favorites</button>
-  <button class="My-List">My List</button>
   <button class="Description">Description</button>
   <button class="Where-To-Watch">Where To Watch</button>
 </div>
@@ -212,9 +212,8 @@ const getRecommendedMovies = () => {
 if (!localStorage.getItem("introAlertShown")) { // checks if alert hasn't been shown before. if not it shows alert.
   alert(
     "⚠️ IMPORTANT:\n\n" +
-    "You must CLICK a video first before adding it to Favorites, To Be Watched, or viewing the Description.\n\n" +
-    "• Single click on Favorites or To Be Watched add the film. \n" +
-    "• Long press to view your saved list either in Favorites or To Be Watched"
+    "You must CLICK a video first before adding it to Favorites, To Be Watched, viewing the Description or Where To Watch \n\n" +
+    "• Single click on Favorites or To Be Watched adds the film. \n" +
   );
 
   localStorage.setItem("introAlertShown", "true"); // next time user open alert not shown.
@@ -225,9 +224,9 @@ let activeMovieId = null; // tracks which movie is currently active/selected. Th
 const videoContainer = document.getElementById("videoContainer"); // finds element.
 
 // detect so can control them later on.
+const myListBtn = document.querySelector(".My-List");
 const favoritesBtn = document.querySelector(".Favorites");
 const watchedBtn = document.querySelector(".To-Be-Watched");
-const myListBtn = document.querySelector(".My-List");
 const descriptionBtn = document.querySelector(".Description");
 const descriptionBox = document.getElementById("descriptionBox");
 const whereToWatchBtn = document.querySelector(".Where-To-Watch");
@@ -537,7 +536,7 @@ video {
   border: 1px solid rgba(255,255,255,0.2);
   color: white;
   padding: 12px 24px;
-  font-size: 25px;
+  font-size: 22px;
   letter-spacing: 1px;
   text-transform: uppercase;
   border-radius: 50px;
@@ -590,7 +589,7 @@ video {
   border-radius: 12px;
   padding: 30px;
   color: white;
-  font-size: 25px;
+  font-size: 27px;
   line-height: 1.8;
   display: none;
   z-index: 9998;
@@ -609,3 +608,4 @@ video {
 </body>
 
 </html>
+
