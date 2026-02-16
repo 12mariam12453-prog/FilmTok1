@@ -238,44 +238,50 @@ const listBox = document.getElementById("listBox");
 ======================= */
 
 const loadAllTrailers = () => {
-  videoContainer.innerHTML = "";
+  videoContainer.innerHTML = ""; // clear existing content
 
-  movies.forEach(movie => { // loops movies in their arrays.
-    movie.trailers.forEach(trailerPath => { // same but for trailers.
-      const video = document.createElement("video"); // creates a video element for each trailer.
+  movies.forEach(movie => {
+    movie.trailers.forEach(trailerPath => {
+      // create wrapper for cinematic effect
+      const videoWrapper = document.createElement("div");
+      videoWrapper.classList.add("video-wrapper");
+      videoWrapper.style.position = "relative";
+      videoWrapper.style.height = "100vh"; // full viewport height
 
-      video.src = trailerPath; // sets video source to the trailer path.
-      video.controls = true; // adds video controls (play, pause, etc.) to the video element.
-      video.style.width = "100%"; // adjusts video to screen size.
-      video.style.marginBottom = "20px"; 
-
-      // attach movie id to video. which is for which.
+      // create video element
+      const video = document.createElement("video");
+      video.src = trailerPath;
+      video.controls = true;
+      video.style.width = "100%";
+      video.style.height = "100%";
+      video.style.objectFit = "cover";
       video.dataset.movieId = movie.id;
+      videoWrapper.appendChild(video);
 
+      // title overlay
       const titleOverlay = document.createElement("div");
       titleOverlay.classList.add("movie-title");
       titleOverlay.textContent = movie.title;
-      
-      videoContainer.appendChild(titleOverlay);
-      videoContainer.appendChild(video); // video on page.
+      videoWrapper.appendChild(titleOverlay);
+
+      videoContainer.appendChild(videoWrapper);
     });
   });
 };
 
-loadAllTrailers(); // apply function to load trailers on page load.
-
+loadAllTrailers(); // run on page load
 
 /* =======================
    SELECT ACTIVE MOVIE
 ======================= */
 
-videoContainer.addEventListener("play", (e) => { // click doesn't work for phones hence the play
+// on mobile, use play event instead of click for touch devices
+videoContainer.addEventListener("play", (e) => {
   if (e.target.tagName === "VIDEO") {
-    activeMovieId = e.target.dataset.movieId; // which movie is active based on click.
-    updateButtonStates(); // update button states based on active movie and local storage.
+    activeMovieId = e.target.dataset.movieId;
+    updateButtonStates(); // update visual states
   }
 }, true);
-
 
 /* =======================
    LOCAL STORAGE
@@ -376,8 +382,8 @@ descriptionBtn.addEventListener("click", () => { /* when description button is c
  descriptionBox.innerHTML = `<p>${movie.description.replace(/\n/g, "<br>")}</p>`; /* sets the content of the description box to the description of the active movie. */
   descriptionBox.classList.toggle("show"); // toggles the description box to show/hide the description.
 
-  whereToWatchBox.classList.remove("open");
-  listBox.classList.remove("open");
+  whereToWatchBox.classList.remove("show");
+  listBox.classList.remove("show");
 });
 
 
@@ -391,10 +397,10 @@ whereToWatchBtn.addEventListener("click", () => {
   const movie = movies.find(m => m.id === activeMovieId); // finds the movie object in the movies array that matches the active movie id. this is needed to get the whereToWatch info of the active movie to display it.
 
   whereToWatchBox.innerHTML = `<p>${movie.whereToWatch}</p>`; // sets the content of the where to watch box to the whereToWatch property of the active movie. basically shows.
-  whereToWatchBox.classList.toggle("open");
+  whereToWatchBox.classList.toggle("show");
 
-  descriptionBox.classList.remove("open"); // close description if open.
-  listBox.classList.remove("open"); // close other dropdowns if open.
+  descriptionBox.classList.remove("show"); // close description if open.
+  listBox.classList.remove("show"); // close other dropdowns if open.
 });
 
 
@@ -481,23 +487,43 @@ document.addEventListener("click", (event) => {
 
 <style>
 
-body {
-  margin: 0;
-  background: radial-gradient(circle at center, #111 0%, #000 60%);
-  color: white;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  overflow: hidden;
+#videoContainer {
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory; /* snap scrolling */
+  scroll-behavior: smooth;
 }
 
-  video {
+.video-wrapper {
+  scroll-snap-align: start; /* each video snaps */
+  position: relative;
   width: 100%;
   height: 100vh;
+}
+
+video {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  scroll-snap-align: start;
   filter: brightness(0.85) contrast(1.05);
-} /* was added as I received some feedback and thought the design could be improved*/
+}
 
+/* overlay title cinematic style */
+.movie-title {
+  position: absolute;
+  bottom: 60px;
+  left: 50px;
+  font-size: 48px;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(0,0,0,0.8);
+  z-index: 2;
+}
 
+/* =======================
+   BUTTONS CINEMATIC
+======================= */
 .buttons {
   position: fixed;
   top: 25px;
@@ -532,18 +558,25 @@ body {
   box-shadow: 0 0 20px rgba(229, 9, 20, 0.6);
 }
 
+/* =======================
+   DROPDOWNS CINEMATIC
+======================= */
 .dropdown {
   position: fixed;
-  top: 90px;
+  top: 80px;
   left: 50%;
   transform: translateX(-50%);
+  width: 90%;
+  max-width: 1200px;
+  max-height: 80vh;
+  overflow-y: auto;
   background: rgba(0,0,0,0.85);
   backdrop-filter: blur(20px);
   border-radius: 12px;
-  padding: 20px;
-  width: 300px;
-  max-height: 300px;
-  overflow-y: auto;
+  padding: 30px;
+  color: white;
+  font-size: 18px;
+  line-height: 1.8;
   display: none;
   z-index: 9998;
   box-shadow: 0 0 40px rgba(0,0,0,0.8);
@@ -553,24 +586,11 @@ body {
   display: block;
 }
 
-  .movie-title {
-  position: absolute;
-  bottom: 60px;
-  left: 40px;
-  font-size: 40px;
-  font-weight: bold;
-  letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(0,0,0,0.8);
+#descriptionBox p {
+  white-space: pre-wrap; /* preserves \n */
 }
-
 
 </style>
 </body>
 
 </html>
-
-
-
-
-
-
