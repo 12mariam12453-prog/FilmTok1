@@ -295,9 +295,11 @@ const observer = new IntersectionObserver((entries) => { // detects elements in 
 
     const video = entry.target; // the video element being observed 
 
-    if (!entry.isIntersecting) {
-      video.pause(); // pause if not visible
-    }
+    if (entry.isIntersecting) {
+  video.play();
+} else {
+  video.pause(); // pause when out of view
+}
 
   });
 
@@ -309,12 +311,6 @@ const observer = new IntersectionObserver((entries) => { // detects elements in 
 // observe every video after loading
 document.querySelectorAll("video").forEach(video => {
   observer.observe(video);
-  
-  if (entry.isIntersecting) {
-  video.play();
-} else {
-  video.pause();
-}
 });
 
 
