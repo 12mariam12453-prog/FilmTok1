@@ -251,6 +251,20 @@ const loadAllTrailers = () => {
 
       // create video element
       const video = document.createElement("video");
+      video.muted = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      // click video to toggle play / pause
+        video.addEventListener("click", () => { // click anywhere on video it pauses/plays
+
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
+
+        });
+
       video.src = trailerPath;
       video.controls = true;
       video.style.width = "100%";
