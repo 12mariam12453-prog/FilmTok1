@@ -284,6 +284,40 @@ videoContainer.addEventListener("play", (e) => {
   }
 }, true);
 
+/* ===========================
+   AUTO PAUSE WHEN OUT OF VIEW
+  ============================ */
+
+// create observer
+const observer = new IntersectionObserver((entries) => { // detects elements in viewport or out.
+
+  entries.forEach(entry => { // loop through observed entries (videos)
+
+    const video = entry.target; // the video element being observed 
+
+    if (!entry.isIntersecting) {
+      video.pause(); // pause if not visible
+    }
+
+  });
+
+}, {
+  threshold: 0.6 // 60% of video must be visible
+});
+
+
+// observe every video after loading
+document.querySelectorAll("video").forEach(video => {
+  observer.observe(video);
+  
+  if (entry.isIntersecting) {
+  video.play();
+} else {
+  video.pause();
+}
+});
+
+
 /* =======================
    LOCAL STORAGE
 ======================= */
