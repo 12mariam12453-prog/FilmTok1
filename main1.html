@@ -496,25 +496,18 @@ myListBtn.addEventListener("click", () => {
    CLICK OUTSIDE CLOSE
 ======================= */
 
-document.addEventListener("click", (event) => {
+document.addEventListener("pointerdown", (event) => {
 
   const clickedInsideList = listBox.contains(event.target); // checks if the click was inside the list box. if it was, we don't want to close the dropdown.
   const clickedInsideDescription = descriptionBox.contains(event.target); // checks if the click was inside the description box. if it was, we don't want to close the dropdown.
   const clickedInsideWhere = whereToWatchBox.contains(event.target); 
-  const clickedButton = event.target.closest(".buttons"); // same but for buttons. if click on button then no close.
+  const clickedButton = event.target.closest(".buttons button"); // same but for buttons. if click on button then no close.
 
   if (!clickedInsideList && !clickedInsideDescription && !clickedInsideWhere && !clickedButton) {
   listBox.classList.remove("show");
   descriptionBox.classList.remove("show");
   whereToWatchBox.classList.remove("show");
 }
-});
-
-// Close dropdown when mouse leaves (desktop only)
-[descriptionBox, whereToWatchBox, listBox].forEach(box => { 
-  box.addEventListener("mouseleave", () => {
-    box.classList.remove("show");
-  });
 });
 
 </script>
