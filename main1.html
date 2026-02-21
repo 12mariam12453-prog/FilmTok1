@@ -503,11 +503,18 @@ document.addEventListener("click", (event) => {
   const clickedInsideWhere = whereToWatchBox.contains(event.target); 
   const clickedButton = event.target.closest(".buttons"); // same but for buttons. if click on button then no close.
 
-  if (!clickedInsideList && !clickedInsideDescription && !clickedInsideWhere && !clickedButton) { // if the click was outside of all dropdowns and buttons, then it closes any open dropdowns.
-    listBox.classList.remove("open"); // close list if open.
-    descriptionBox.classList.remove("open"); 
-    whereToWatchBox.classList.remove("open");
-  }
+  if (!clickedInsideList && !clickedInsideDescription && !clickedInsideWhere && !clickedButton) {
+  listBox.classList.remove("show");
+  descriptionBox.classList.remove("show");
+  whereToWatchBox.classList.remove("show");
+}
+});
+
+// Close dropdown when mouse leaves (desktop only)
+[descriptionBox, whereToWatchBox, listBox].forEach(box => { 
+  box.addEventListener("mouseleave", () => {
+    box.classList.remove("show");
+  });
 });
 
 </script>
@@ -623,14 +630,19 @@ video {
   color: white;
   font-size: 27px;
   line-height: 1.8;
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+
   z-index: 9998;
   box-shadow: 0 0 40px rgba(0,0,0,0.8);
 }
 
 .dropdown.show {
-  display: block;
+  opacity: 1;
+  visibility: visible;
 }
+
 
 #descriptionBox p {
   white-space: pre-wrap; /* preserves \n */
