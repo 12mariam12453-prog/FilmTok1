@@ -244,15 +244,6 @@ const loadAllTrailers = () => {
 
   const recommendedMovies = getRecommendedMovies();
 
-  // ===== RECOMMENDATION TITLE =====
-  const sectionTitle = document.createElement("div");
-  sectionTitle.textContent = "Recommended For You";
-  sectionTitle.style.color = "white";
-  sectionTitle.style.fontSize = "40px";
-  sectionTitle.style.padding = "40px";
-  sectionTitle.style.textAlign = "center";
-  videoContainer.appendChild(sectionTitle);
-
   recommendedMovies.forEach(movie => {
     movie.trailers.forEach(trailerPath => {
 
@@ -561,7 +552,6 @@ document.addEventListener("pointerdown", (event) => {
 
 
 <style>
-
 #videoContainer {
   height: 100%;
   overflow-y: scroll;
@@ -569,30 +559,43 @@ document.addEventListener("pointerdown", (event) => {
   scroll-behavior: smooth;
   display: flex; 
   flex-direction: column;
-  align-items: center; /* center videos like a phone feed */
-  background: #111; /* optional dark background */
+  align-items: center;
+  background: linear-gradient(180deg, #111 0%, #222 100%); /* cinematic gradient */
+  padding: 40px 0; /* adds some space top/bottom */
 }
 
+/* Each video wrapper */
+.video-wrapper {
+  position: relative;
+  width: 90%;        /* slightly smaller than full width for cinematic feel */
+  max-width: 1280px;
+  margin: 40px 0;
+  scroll-snap-align: start; /* snap each video nicely */
+}
 
 video {
   width: 100%;
-  height: 100%;
-  object-fit: fit;
+  height: auto;      /* maintain aspect ratio */
+  object-fit: cover;
+  border-radius: 8px;
   filter: brightness(0.85) contrast(1.05);
 }
-
 
 /* overlay title cinematic style */
 .movie-title {
   position: absolute;
-  bottom: 60px;
-  left: 50px;
-  font-size: 25px;
+  bottom: 20px;
+  left: 20px;
+  font-size: 28px;
   font-weight: bold;
   color: #fff;
   letter-spacing: 2px;
   text-shadow: 0 0 20px rgba(0,0,0,0.8);
   z-index: 2;
+  max-width: 90%;  /* prevents overlapping text */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* =======================
@@ -604,7 +607,7 @@ video {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 30px;
+  gap: 20px;
   z-index: 9999;
 }
 
@@ -613,8 +616,8 @@ video {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.2);
   color: white;
-  padding: 12px 24px;
-  font-size: 23px;
+  padding: 8px 16px;   /* smaller */
+  font-size: 18px;      /* smaller */
   letter-spacing: 1px;
   text-transform: uppercase;
   border-radius: 50px;
@@ -632,27 +635,7 @@ video {
   box-shadow: 0 0 20px rgba(229, 9, 20, 0.6);
 }
 
-#listBox h2 {
-  margin-top: 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-  padding-bottom: 8px;
-  letter-spacing: 1px;
-}
-
-#listBox ul {
-  list-style: none;
-  padding-left: 0;
-}
-
-#listBox li {
-  padding: 8px 0;
-  font-size: 25px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-/* =======================
-   DROPDOWNS CINEMATIC
-======================= */
+/* Keep dropdowns same cinematic style */
 .dropdown {
   position: fixed;
   top: 70px;
@@ -672,7 +655,6 @@ video {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease;
-
   z-index: 9998;
   box-shadow: 0 0 40px rgba(0,0,0,0.8);
 }
@@ -682,15 +664,14 @@ video {
   visibility: visible;
 }
 
-
 #descriptionBox p {
   white-space: pre-wrap; /* preserves \n */
 }
-
+  
 </style>
 </body>
-
 </html>
+
 
 
 
