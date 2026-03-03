@@ -213,7 +213,7 @@ if (!localStorage.getItem("introAlertShown")) { // checks if alert hasn't been s
   alert(
     "⚠️ IMPORTANT:\n\n" +
     "You must CLICK a video first before adding it to Favorites, To Be Watched, or viewing the Description.\n\n" +
-    "• Single click on Favorites or To Be Watched add the film. \n" 
+    "• Single click on Favorites or To Be Watched adds the film to My List button. \n" 
   );
 
   localStorage.setItem("introAlertShown", "true"); // next time user open alert not shown.
@@ -278,9 +278,6 @@ const loadAllTrailers = () => {
 };
 
 loadAllTrailers(); // initial load of trailers when page loads.
-document.querySelectorAll("video").forEach(video => {
-  observer.observe(video);
-});
 
 
 /* =======================
@@ -655,6 +652,7 @@ video {
 </body>
 
 </html>
+
 
 
 
