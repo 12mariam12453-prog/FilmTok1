@@ -566,17 +566,16 @@ document.addEventListener("pointerdown", (event) => {
 }
 
   .video-wrapper {
+  height: 100vh;              /* full screen height */
+  width: 100vw;               /* full screen width */
+  scroll-snap-align: start;   /* each video snaps */
   position: relative;
-  width: 100%;
-  margin: 40px auto;
-  scroll-snap-align: start;
 }
 
 video {
-  width: auto;
-  height: auto;
-  object-fit: cover;
-  filter: brightness(0.85) contrast(1.05);
+  height: 100%;
+  width: 100%;
+  object-fit: cover;          /* fills entire screen */
 }
 
 /* overlay title cinematic style */
@@ -606,7 +605,7 @@ video {
   transform: translateX(-50%);
   display: flex;
   gap: 20px;
-  z-index: 9999;
+  z-index: 1000;
 }
 
 .buttons button {
@@ -669,6 +668,7 @@ video {
 </style>
 </body>
 </html>
+
 
 
 
