@@ -563,34 +563,21 @@ document.addEventListener("pointerdown", (event) => {
 <style>
 
 #videoContainer {
-  height: 100vh;
+  height: 100%;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
-  
-  display: flex;
+  display: flex; 
   flex-direction: column;
   align-items: center; /* center videos like a phone feed */
   background: #111; /* optional dark background */
 }
 
-.video-wrapper {
-  scroll-snap-align: start;
-  position: relative;
-
-  width: 375px;       /* typical mobile width */
-  height: 667px;      /* typical mobile height */
-  margin: 20px 0;     /* space between “phone screens” */
-  border-radius: 30px; /* rounded edges like a phone */
-  overflow: hidden;   /* clip video edges */
-  box-shadow: 0 0 40px rgba(0,0,0,0.6); /* subtle floating effect */
-  transition: transform 0.5s ease, opacity 0.5s ease;
-}
 
 video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
   filter: brightness(0.85) contrast(1.05);
 }
 
@@ -619,8 +606,6 @@ video {
   display: flex;
   gap: 30px;
   z-index: 9999;
-  transform: translateX(-50%) scale(0.9); /* optional scale for larger screens */
-
 }
 
 .buttons button {
@@ -706,6 +691,7 @@ video {
 </body>
 
 </html>
+
 
 
 
