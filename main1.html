@@ -178,30 +178,28 @@ this is used to check if a movie is already in favorites and to display the list
 
 
 const getRecommendedMovies = () => {
-  const favorites = getFavorites(); // gets list of favorite movie ids from local storage. this is needed to determine which genres the user likes based on their 
-  // favorites and to recommend similar movies.
+  const favorites = getFavorites(); 
 
   if (favorites.length === 0) {
-    return movies.sort(() => 0.5 - Math.random()); /* if no favorites, return a random selection of movies. 
-    this is a simple way to show some content to the user when they haven't interacted with the app yet. 
-    it shuffles the movies array and returns it. */
+    return [...movies].sort(() => 0.5 - Math.random());
   }
 
+  // Get all individual genres from favorites
   const favoriteGenres = movies
-    .filter(movie => favorites.includes(movie.id)) // filters the movies to only those that are in the favorites list based on their id. this gives us the movie objects
-    //  that the user has favorited.
-    .map(movie => movie.genre); // then maps those movie objects to their genres. this gives us a list of genres that the user likes based on their favorites.
+    .filter(movie => favorites.includes(movie.id))
+    .flatMap(movie => movie.genre.split(",").map(g => g.trim()));
 
-  const recommended = movies.filter(movie => /* filters the movies to find recommendations. the criteria for recommendation is that the movie's genre is in the user's
-   favorite genres and that the movie is not already in the favorites list. this ensures that we recommend movies that are similar
-    to what the user likes but that they haven't already favorited. */
-    favoriteGenres.some(favGenre =>
-  movie.genre.includes(favGenre)
-) && // checks if the movie's genre is in the list of favorite genres.
-    !favorites.includes(movie.id) // checks if the movie is not already in the favorites list.
-  );
+  // Recommend movies that share ANY genre
+  const recommended = movies.filter(movie => {
+    const movieGenres = movie.genre.split(",").map(g => g.trim());
 
-  return recommended;
+    return movieGenres.some(g => favoriteGenres.includes(g)) &&
+           !favorites.includes(movie.id);
+  });
+
+  return recommended.length > 0
+  ? recommended.sort(() => 0.5 - Math.random())
+  : [...movies].sort(() => 0.5 - Math.random());
 };
 
 
@@ -241,41 +239,48 @@ const listBox = document.getElementById("listBox");
 ======================= */
 
 const loadAllTrailers = () => {
-  videoContainer.innerHTML = ""; // clear existing content
+  videoContainer.innerHTML = "";
 
-  const shuffledMovies = [...movies].sort(() => 0.5 - Math.random());
-   shuffledMovies.forEach(movie => {
+  const recommendedMovies = getRecommendedMovies();
+
+  // ===== RECOMMENDATION TITLE =====
+  const sectionTitle = document.createElement("div");
+  sectionTitle.textContent = "Recommended For You";
+  sectionTitle.style.color = "white";
+  sectionTitle.style.fontSize = "40px";
+  sectionTitle.style.padding = "40px";
+  sectionTitle.style.textAlign = "center";
+  videoContainer.appendChild(sectionTitle);
+
+  recommendedMovies.forEach(movie => {
     movie.trailers.forEach(trailerPath => {
-      // create wrapper for cinematic effect
+
       const videoWrapper = document.createElement("div");
       videoWrapper.classList.add("video-wrapper");
-      videoWrapper.style.position = "relative";
-      videoWrapper.style.height = "100vh"; // full viewport height
 
-      // create video element
       const video = document.createElement("video");
       video.autoplay = true;
       video.playsInline = true;
       video.src = trailerPath;
       video.controls = true;
-      video.style.width = "100%";
-      video.style.height = "100%";
-      video.style.objectFit = "cover";
       video.dataset.movieId = movie.id;
+
       videoWrapper.appendChild(video);
 
-      // title overlay
       const titleOverlay = document.createElement("div");
       titleOverlay.classList.add("movie-title");
       titleOverlay.textContent = movie.title;
-      videoWrapper.appendChild(titleOverlay);
 
+      videoWrapper.appendChild(titleOverlay);
       videoContainer.appendChild(videoWrapper);
     });
   });
 };
 
-loadAllTrailers(); // run on page load
+document.querySelectorAll("video").forEach(video => {
+  observer.observe(video);
+});
+
 
 /* =======================
    SELECT ACTIVE MOVIE
@@ -382,6 +387,7 @@ favoritesBtn.addEventListener("click", () => {
   }
 
   updateButtonStates(); // update button states to reflect the change in favorites.
+  loadAllTrailers(); // refresh trailers to update recommendations based on new favorites.
 });
 
 
@@ -648,4 +654,5 @@ video {
 </body>
 
 </html>
+
 
