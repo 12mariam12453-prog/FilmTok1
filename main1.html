@@ -213,7 +213,7 @@ if (!localStorage.getItem("introAlertShown")) { // checks if alert hasn't been s
   alert(
     "⚠️ IMPORTANT:\n\n" +
     "You must CLICK a video first before adding it to Favorites, To Be Watched, or viewing the Description.\n\n" +
-    "• Single click on Favorites or To Be Watched adds the film to My List button. \n" 
+    "• Single click on Favorites or To Be Watched add the film. \n" 
   );
 
   localStorage.setItem("introAlertShown", "true"); // next time user open alert not shown.
@@ -222,6 +222,7 @@ if (!localStorage.getItem("introAlertShown")) { // checks if alert hasn't been s
 
 let activeMovieId = null; // tracks which movie is currently active/selected. This is crucial for button actions and description display.
 const videoContainer = document.getElementById("videoContainer"); // finds element.
+let pendingFeedUpdate = false; // track if feed should update after trailer ends
 
 // detect so can control them later on.
 const myListBtn = document.querySelector(".My-List");
@@ -279,6 +280,16 @@ const loadAllTrailers = () => {
 
 loadAllTrailers(); // initial load of trailers when page loads.
 
+function triggerFeedUpdate() {
+  videoContainer.style.transition = "opacity 0.5s ease"; // fade out
+  videoContainer.style.opacity = "0";
+
+  setTimeout(() => {
+    loadAllTrailers();
+    videoContainer.style.opacity = "1"; // fade in
+  }, 500);
+}
+
 
 /* =======================
    SELECT ACTIVE MOVIE
@@ -291,6 +302,13 @@ videoContainer.addEventListener("play", (e) => {
     updateButtonStates(); // update visual states
   }
 }, true);
+
+videoContainer.addEventListener("ended", (e) => {
+  if (e.target.tagName === "VIDEO") {
+    triggerFeedUpdate();
+  }
+}, true);
+
 
 /* ===========================
    AUTO PAUSE WHEN OUT OF VIEW
@@ -315,11 +333,37 @@ const observer = new IntersectionObserver((entries) => { // detects elements in 
   threshold: 0.6 // 60% of video must be visible
 });
 
-
 // observe every video after loading
 document.querySelectorAll("video").forEach(video => {
   observer.observe(video);
 });
+
+const triggerFeedUpdate = () => {
+
+  // fade out container
+  videoContainer.style.transition = "opacity 0.6s ease";
+  videoContainer.style.opacity = "0"; // fade out for smooth transition when loading new trailers.
+
+  setTimeout(() => { // wait for fade out to finish before loading new trailers.
+
+    loadAllTrailers();
+
+    // re-attach observer to new videos
+    document.querySelectorAll("video").forEach(video => {
+      observer.observe(video);
+    });
+
+    // fade back in
+    videoContainer.style.opacity = "1";
+
+  }, 600); // matches transition time
+  videoContainer.addEventListener("ended", (e) => {
+  if (e.target.tagName === "VIDEO" && pendingFeedUpdate) {
+    pendingFeedUpdate = false;
+    triggerFeedUpdate();
+  }
+}, true);
+};
 
 
 /* =======================
@@ -385,7 +429,7 @@ favoritesBtn.addEventListener("click", () => {
   }
 
   updateButtonStates(); // update button states to reflect the change in favorites.
-  loadAllTrailers(); // refresh trailers to update recommendations based on new favorites.
+  pendingFeedUpdate = true; // wait until trailer ends to update feed
 });
 
 
@@ -525,15 +569,25 @@ document.addEventListener("pointerdown", (event) => {
 #videoContainer {
   height: 100vh;
   overflow-y: scroll;
-  scroll-snap-type: y mandatory; /* snap scrolling */
+  scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center videos like a phone feed */
+  background: #111; /* optional dark background */
 }
 
 .video-wrapper {
-  scroll-snap-align: start; /* each video snaps */
+  scroll-snap-align: start;
   position: relative;
-  width: 100%;
-  height: 100vh;
+
+  width: 375px;       /* typical mobile width */
+  height: 667px;      /* typical mobile height */
+  margin: 20px 0;     /* space between “phone screens” */
+  border-radius: 30px; /* rounded edges like a phone */
+  overflow: hidden;   /* clip video edges */
+  box-shadow: 0 0 40px rgba(0,0,0,0.6); /* subtle floating effect */
 }
 
 video {
@@ -542,6 +596,7 @@ video {
   object-fit: cover;
   filter: brightness(0.85) contrast(1.05);
 }
+
 
 /* overlay title cinematic style */
 .movie-title {
@@ -567,6 +622,8 @@ video {
   display: flex;
   gap: 30px;
   z-index: 9999;
+  transform: translateX(-50%) scale(0.9); /* optional scale for larger screens */
+
 }
 
 .buttons button {
@@ -652,6 +709,7 @@ video {
 </body>
 
 </html>
+
 
 
 
