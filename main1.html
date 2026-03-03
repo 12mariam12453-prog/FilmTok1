@@ -279,6 +279,11 @@ const loadAllTrailers = () => {
 };
 
 loadAllTrailers(); // initial load of trailers when page loads.
+
+const attachObservers = () => {
+  document.querySelectorAll("video").forEach(video => observer.observe(video));
+}; 
+
 setTimeout(() => {
   loadAllTrailers();
   attachObservers(); // <-- important
@@ -329,10 +334,6 @@ const observer = new IntersectionObserver((entries) => { // detects elements in 
   threshold: 0.6 // 60% of video must be visible
 });
 
-// observe every video after loading
-document.querySelectorAll("video").forEach(video => {
-  observer.observe(video);
-});
 
 const triggerFeedUpdate = () => {
 
@@ -353,14 +354,13 @@ const triggerFeedUpdate = () => {
     videoContainer.style.opacity = "1";
 
   }, 600); // matches transition time
+  
+  // observe every video after loading
+document.querySelectorAll("video").forEach(video => {
+  observer.observe(video);
+});
 };
 
-videoContainer.addEventListener("ended", (e) => {
-  if (e.target.tagName === "VIDEO" && pendingFeedUpdate) {
-    pendingFeedUpdate = false;
-    triggerFeedUpdate();
-  }
-}, true);
 
 /* =======================
    LOCAL STORAGE
@@ -691,6 +691,7 @@ video {
 </body>
 
 </html>
+
 
 
 
