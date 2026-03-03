@@ -577,7 +577,7 @@ document.addEventListener("pointerdown", (event) => {
 video {
   width: 100%;
   aspect-ratio: 16/9;    /* ensures rectangle shape */
-  object-fit: cover;     /* fills the rectangle nicely, cropping edges if needed */
+  object-fit: fill;     /* fills the rectangle nicely, cropping edges if needed */
   border-radius: 8px;
   filter: brightness(0.85) contrast(1.05);
 }
@@ -672,6 +672,7 @@ video {
 </style>
 </body>
 </html>
+
 
 
 
