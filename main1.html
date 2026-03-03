@@ -568,19 +568,22 @@ document.addEventListener("pointerdown", (event) => {
 /* Each video wrapper */
 .video-wrapper {
   position: relative;
-  width: 90%;        /* controls the width of the video */
-  max-width: 1280px;
-  margin: 40px 0;
-  scroll-snap-align: start; /* snap each video nicely */
+  width: 360px;              /* phone-like width */
+  max-width: 90%;
+  margin: 40px auto;
+  scroll-snap-align: center;
+  background: #111;
+  padding: 10px;
+  border-radius: 30px;
 }
 
-/* Rectangular videos */
 video {
   width: 100%;
-  aspect-ratio: 17/10; /* ensures rectangle shape */
-  object-fit: cover;     /* fills the rectangle nicely, cropping edges if needed */
-  border-radius: 8px;
-  filter: brightness(0.85) contrast(1.05);
+  aspect-ratio: 9/16;        /* phone screen shape */
+  object-fit: cover;         /* fills shape without stretching */
+  border-radius: 20px;       /* rounded like a phone */
+  background: black;         /* prevents white flash */
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
 }
 
 /* overlay title cinematic style */
@@ -673,6 +676,7 @@ video {
 </style>
 </body>
 </html>
+
 
 
 
