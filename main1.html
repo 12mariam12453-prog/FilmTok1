@@ -567,14 +567,14 @@ document.addEventListener("pointerdown", (event) => {
 /* Each video wrapper */
 .video-wrapper {
   position: relative;
-  width: 90%;        /* slightly smaller than full width for cinematic feel */
+  width: 80%;        /* slightly smaller than full width for cinematic feel */
   max-width: 1280px;
   margin: 40px 0;
   scroll-snap-align: start; /* snap each video nicely */
 }
 
 video {
-  width: 100%;
+  width: auto;
   height: auto;      /* maintain aspect ratio */
   object-fit: cover;
   border-radius: 8px;
@@ -641,7 +641,7 @@ video {
   top: 70px;
   left: 50%;
   transform: translateX(-50%);
-  width: 60%;
+  width: 50%;
   max-width: 1200px;
   max-height: 80vh;
   overflow-y: auto;
@@ -650,7 +650,7 @@ video {
   border-radius: 12px;
   padding: 30px;
   color: white;
-  font-size: 27px;
+  font-size: 17px;
   line-height: 1.8;
   opacity: 0;
   visibility: hidden;
@@ -671,6 +671,7 @@ video {
 </style>
 </body>
 </html>
+
 
 
 
