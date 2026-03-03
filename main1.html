@@ -565,21 +565,12 @@ document.addEventListener("pointerdown", (event) => {
   padding: 40px 0; /* adds some space top/bottom */
 }
 
-/* Each video wrapper */
-.video-wrapper {
-  position: relative;
-  width: 90%;
-  max-width: 1200px;
-  margin: 40px auto;
-  scroll-snap-align: start;
-}
 
 video {
   width: 100%;
-  height: auto;        /* keeps original aspect ratio */
-  object-fit: contain; /* ensures full video is visible */
-  border-radius: 12px;
-  background: black;   /* fills empty space if vertical */
+  height: 100%;
+  object-fit: fill;
+  filter: brightness(0.85) contrast(1.05);
 }
 
 /* overlay title cinematic style */
@@ -672,6 +663,7 @@ video {
 </style>
 </body>
 </html>
+
 
 
 
