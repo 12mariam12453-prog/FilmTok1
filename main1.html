@@ -7,7 +7,7 @@
 
 <body>
 
-<div id="videoContainer"></div>
+<div id="videoContainer"></div> <!-- so detect later on -->
 
 <div class="buttons">
   <button class="My-List">My List</button>
@@ -22,18 +22,21 @@
 <div id="listBox" class="dropdown"></div>
 
 <script>
+
 /* =======================
    MOVIE DATA
 ======================= */
-const movies = [
+
+const movies = [ // arry multiple trailers. 
   {
     id: "Airport",
     title: "Airport",
     genre: "Action, Drama, Thriller",
     description: "Movie. \n Melodrama about a bomber on board an airplane, an airport almost closed by snow, and various personal problems of the people involved. Great casting if interested in old 70s films.",
     whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
-    trailers: ["trailers/Airport.mp4"]
+    trailers: ["trailers/Airport.mp4", ]
   },
+
   {
     id: "Mash",
     title: "Mash",
@@ -42,13 +45,14 @@ const movies = [
     whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
     trailers: ["trailers/Mash.mp4", "trailers/MASH1.mp4"]
   },
+
   {
     id: "Patton",
     title: "Patton",
     genre: "Drama, History, War",
-    description: "Movie. \n tells the tale of General George S. Patton, famous tank commander of World War II. The film begins with Patton's career in North Africa and progresses through the invasion of Germany and the fall of the Third Reich. Side plots also speak of Patton's numerous faults such his temper and habit towards insubordination. A lot of people have said it has a good soundtrack.",
+    description: "Movie. \n tells the tale of General George S. Patton, famous tank commander of World War II. The film begins with Patton's career in North Africa and progresses through the invasion of Germany and the fall of the Third Reich. Side plots also speak of Patton's numerous faults such his temper and habit towards insubordination. A lot of people have said it has a good soundtrack. ",
     whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
-    trailers: ["trailers/Patton.mp4"]
+    trailers: ["trailers/Patton.mp4", ]
   },
 
   {
@@ -159,16 +163,68 @@ const movies = [
     whereToWatch: "To prevent any unsafe viruses and ads download Brave. To watch for free this is on hdtodayz.to",
     trailers: ["trailers/The-Blues-Brothers.mp4", "trailers/The-Blues-Brothers1.mp4"]
   },
-  
+
 ];
+
+
+/* =======================
+   RECOMMENDATION LOGIC
+======================= */
+
+const getFavorites = () => {
+  return JSON.parse(localStorage.getItem("favorites")) || [];
+}; /* this is a helper function to get the favorites list from local storage. it returns an empty array if there are no favorites saved. 
+this is used to check if a movie is already in favorites and to display the list of favorites. */
+
+
+const getRecommendedMovies = () => {
+  const favorites = getFavorites(); 
+
+  if (favorites.length === 0) {
+    return [...movies].sort(() => 0.5 - Math.random());
+  }
+
+  // Get all individual genres from favorites
+  const favoriteGenres = movies
+    .filter(movie => favorites.includes(movie.id))
+    .flatMap(movie => movie.genre.split(",").map(g => g.trim()));
+
+  // Recommend movies that share ANY genre
+  const recommended = movies.filter(movie => {
+    const movieGenres = movie.genre.split(",").map(g => g.trim());
+
+    return movieGenres.some(g => favoriteGenres.includes(g)) &&
+           !favorites.includes(movie.id);
+  });
+
+  return recommended.length > 0
+  ? recommended.sort(() => 0.5 - Math.random())
+  : [...movies].sort(() => 0.5 - Math.random());
+};
+
 
 /* =======================
    GLOBAL STATE
 ======================= */
-let activeMovieId = null;
-let pendingFeedUpdate = false;
 
-const videoContainer = document.getElementById("videoContainer");
+// FIRST TIME ALERT 
+// criteria: visual appeal.
+if (!localStorage.getItem("introAlertShown")) { // checks if alert hasn't been shown before. if not it shows alert.
+  alert(
+    "⚠️ IMPORTANT:\n\n" +
+    "You must CLICK a video first before adding it to Favorites, To Be Watched, or viewing the Description.\n\n" +
+    "• Single click on Favorites or To Be Watched add the film. \n" 
+  );
+
+  localStorage.setItem("introAlertShown", "true"); // next time user open alert not shown.
+}
+
+
+let activeMovieId = null; // tracks which movie is currently active/selected. This is crucial for button actions and description display.
+const videoContainer = document.getElementById("videoContainer"); // finds element.
+let pendingFeedUpdate = false; // track if feed should update after trailer ends
+
+// detect so can control them later on.
 const myListBtn = document.querySelector(".My-List");
 const favoritesBtn = document.querySelector(".Favorites");
 const watchedBtn = document.querySelector(".To-Be-Watched");
@@ -178,69 +234,17 @@ const whereToWatchBtn = document.querySelector(".Where-To-Watch");
 const whereToWatchBox = document.getElementById("whereToWatchBox");
 const listBox = document.getElementById("listBox");
 
-/* =======================
-   LOCAL STORAGE HELPERS
-======================= */
-const saveToLocalStorage = (key, value) => {
-  const existing = JSON.parse(localStorage.getItem(key)) || [];
-  if (!existing.includes(value)) existing.push(value);
-  localStorage.setItem(key, JSON.stringify(existing));
-};
-
-const removeFromLocalStorage = (key, value) => {
-  let existing = JSON.parse(localStorage.getItem(key)) || [];
-  existing = existing.filter(item => item !== value);
-  localStorage.setItem(key, JSON.stringify(existing));
-};
-
-const getFromLocalStorage = (key) => JSON.parse(localStorage.getItem(key)) || [];
-const getFavorites = () => getFromLocalStorage("favorites");
 
 /* =======================
-   RECOMMENDATION LOGIC
+   LOAD ALL TRAILERS
 ======================= */
-const getRecommendedMovies = () => {
-  const favorites = getFavorites();
-  if (favorites.length === 0) return [...movies].sort(() => 0.5 - Math.random());
 
-  const favoriteGenres = movies
-    .filter(movie => favorites.includes(movie.id))
-    .flatMap(movie => movie.genre.split(",").map(g => g.trim()));
-
-  const recommended = movies.filter(movie => {
-    const movieGenres = movie.genre.split(",").map(g => g.trim());
-    return movieGenres.some(g => favoriteGenres.includes(g)) &&
-           !favorites.includes(movie.id);
-  });
-
-  return recommended.length > 0
-    ? recommended.sort(() => 0.5 - Math.random())
-    : [...movies].sort(() => 0.5 - Math.random());
-};
-
-/* =======================
-   INTERSECTION OBSERVER
-======================= */
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    const video = entry.target;
-    if (entry.isIntersecting) video.play();
-    else video.pause();
-  });
-}, { threshold: 0.6 });
-
-const attachObservers = () => {
-  document.querySelectorAll("video").forEach(video => observer.observe(video));
-};
-
-/* =======================
-   LOAD TRAILERS
-======================= */
 const loadAllTrailers = () => {
   videoContainer.innerHTML = "";
 
   const recommendedMovies = getRecommendedMovies();
 
+  // ===== RECOMMENDATION TITLE =====
   const sectionTitle = document.createElement("div");
   sectionTitle.textContent = "Recommended For You";
   sectionTitle.style.color = "white";
@@ -251,6 +255,7 @@ const loadAllTrailers = () => {
 
   recommendedMovies.forEach(movie => {
     movie.trailers.forEach(trailerPath => {
+
       const videoWrapper = document.createElement("div");
       videoWrapper.classList.add("video-wrapper");
 
@@ -271,118 +276,236 @@ const loadAllTrailers = () => {
       videoContainer.appendChild(videoWrapper);
     });
   });
-
-  attachObservers(); // make sure observer re-attaches
 };
 
-loadAllTrailers();
+loadAllTrailers(); // initial load of trailers when page loads.
 
-/* =======================
-   FEED UPDATE WITH TRANSITION
-======================= */
-const triggerFeedUpdate = () => {
-  videoContainer.style.transition = "opacity 0.6s ease";
+function triggerFeedUpdate() {
+  videoContainer.style.transition = "opacity 0.5s ease"; // fade out
   videoContainer.style.opacity = "0";
 
   setTimeout(() => {
     loadAllTrailers();
-    videoContainer.style.opacity = "1";
-  }, 600);
-};
+    videoContainer.style.opacity = "1"; // fade in
+  }, 500);
+}
+
 
 /* =======================
-   ACTIVE MOVIE
+   SELECT ACTIVE MOVIE
 ======================= */
+
+// on mobile, use play event instead of click for touch devices
 videoContainer.addEventListener("play", (e) => {
   if (e.target.tagName === "VIDEO") {
     activeMovieId = e.target.dataset.movieId;
-    updateButtonStates();
+    updateButtonStates(); // update visual states
   }
 }, true);
 
 videoContainer.addEventListener("ended", (e) => {
+  if (e.target.tagName === "VIDEO") {
+    triggerFeedUpdate();
+  }
+}, true);
+
+
+/* ===========================
+   AUTO PAUSE WHEN OUT OF VIEW
+  ============================ */
+
+// create observer
+const observer = new IntersectionObserver((entries) => { // detects elements in viewport or out.
+
+  entries.forEach(entry => { // loop through observed entries (videos)
+
+    const video = entry.target; // the video element being observed 
+
+    if (entry.isIntersecting) {
+  video.play();
+} else {
+  video.pause(); // pause when out of view
+}
+
+  });
+
+}, {
+  threshold: 0.6 // 60% of video must be visible
+});
+
+// observe every video after loading
+document.querySelectorAll("video").forEach(video => {
+  observer.observe(video);
+});
+
+const triggerFeedUpdate = () => {
+
+  // fade out container
+  videoContainer.style.transition = "opacity 0.6s ease";
+  videoContainer.style.opacity = "0"; // fade out for smooth transition when loading new trailers.
+
+  setTimeout(() => { // wait for fade out to finish before loading new trailers.
+
+    loadAllTrailers();
+
+    // re-attach observer to new videos
+    document.querySelectorAll("video").forEach(video => {
+      observer.observe(video);
+    });
+
+    // fade back in
+    videoContainer.style.opacity = "1";
+
+  }, 600); // matches transition time
+  videoContainer.addEventListener("ended", (e) => {
   if (e.target.tagName === "VIDEO" && pendingFeedUpdate) {
     pendingFeedUpdate = false;
     triggerFeedUpdate();
   }
 }, true);
+};
+
 
 /* =======================
-   BUTTON STATE
+   LOCAL STORAGE
 ======================= */
+
+const saveToLocalStorage = (key, value) => { // value is movie id. key is either favorites or watched. This adds to local storage without overwriting existing data.
+  const existing = JSON.parse(localStorage.getItem(key)) || []; // reads data.
+
+  if (!existing.includes(value)) { // only add if not already there.
+    existing.push(value); // adds new value to array.
+    localStorage.setItem(key, JSON.stringify(existing)); // saves back to local storage.
+  }
+};
+
+const removeFromLocalStorage = (key, value) => {
+  let existing = JSON.parse(localStorage.getItem(key)) || []; /* reads data from local storage. if there is no data, it returns an empty array.
+   this is used to get the current list of favorites or watched movies so we can remove a movie from that list when unfavoriting or marking as unwatched. */
+  existing = existing.filter(item => item !== value); // removes the value from the array.
+  localStorage.setItem(key, JSON.stringify(existing)); /* saves the updated array back to local storage. this is used to update the favorites or watched list
+   in local storage after removing a movie from it.*/
+};
+
+const getFromLocalStorage = (key) => { 
+  return JSON.parse(localStorage.getItem(key)) || []; /* this is a helper function to get data from local storage. 
+  it takes a key (favorites or watched) and returns the corresponding list of movie ids.*/
+};
+
+
+/* =======================
+   BUTTON STATE UPDATE
+======================= */
+
 const updateButtonStates = () => {
-  if (!activeMovieId) return;
-  const favorites = getFromLocalStorage("favorites");
+  if (!activeMovieId) return; // if no active movie, do nothing. this prevents errors when clicking buttons without selecting a movie first.
+
+  const favorites = getFromLocalStorage("favorites"); // gets current favorites list from local storage.
   const watched = getFromLocalStorage("watched");
 
-  favoritesBtn.classList.toggle("active", favorites.includes(activeMovieId));
+  // toggle active class based on whether active movie is in favorites/watched lists. visuals criteria, smooth.
+  favoritesBtn.classList.toggle("active", favorites.includes(activeMovieId)); // if active movie is in favorites, add active class. if not, remove it.
   watchedBtn.classList.toggle("active", watched.includes(activeMovieId));
 };
+
 
 /* =======================
    FAVORITES BUTTON
 ======================= */
-favoritesBtn.addEventListener("click", () => {
-  if (!activeMovieId) return;
-  const favorites = getFromLocalStorage("favorites");
-  if (favorites.includes(activeMovieId)) removeFromLocalStorage("favorites", activeMovieId);
-  else saveToLocalStorage("favorites", activeMovieId);
 
-  updateButtonStates();
-  pendingFeedUpdate = true; // update feed after trailer ends
+
+/* when favorites button is clicked, it checks if there is an active movie. if there is, it gets the current list of favorites from local storage. 
+then it checks if the active movie is already in the favorites list. if it is, it removes it (unfavorite). if it's not, it adds it to the list (favorite).*/
+
+favoritesBtn.addEventListener("click", () => { 
+  if (!activeMovieId) return; // if no active movie, do nothing.
+
+  const favorites = getFromLocalStorage("favorites"); // gets current favorites list from local storage.
+
+  if (favorites.includes(activeMovieId)) { // if already in favorites, remove it (unfavorite).
+    removeFromLocalStorage("favorites", activeMovieId);
+  } else {
+    saveToLocalStorage("favorites", activeMovieId); 
+  }
+
+  updateButtonStates(); // update button states to reflect the change in favorites.
+  pendingFeedUpdate = true; // wait until trailer ends to update feed
 });
+
 
 /* =======================
    WATCHED BUTTON
 ======================= */
-watchedBtn.addEventListener("click", () => {
+
+watchedBtn.addEventListener("click", () => { 
   if (!activeMovieId) return;
+
   const watched = getFromLocalStorage("watched");
-  if (watched.includes(activeMovieId)) removeFromLocalStorage("watched", activeMovieId);
-  else saveToLocalStorage("watched", activeMovieId);
+
+  if (watched.includes(activeMovieId)) {
+    removeFromLocalStorage("watched", activeMovieId);
+  } else {
+    saveToLocalStorage("watched", activeMovieId);
+  }
 
   updateButtonStates();
 });
 
+
 /* =======================
    DESCRIPTION BUTTON
 ======================= */
-descriptionBtn.addEventListener("click", () => {
-  if (!activeMovieId) return;
-  const movie = movies.find(m => m.id === activeMovieId);
-  descriptionBox.innerHTML = `<p>${movie.description.replace(/\n/g, "<br>")}</p>`;
-  descriptionBox.classList.toggle("show");
+
+descriptionBtn.addEventListener("click", () => { /* when description button is clicked, it checks if there is an active movie. if there is, 
+  it finds the movie object based on the active movie id.*/
+  if (!activeMovieId) return; // if no active movie, do nothing.
+
+  const movie = movies.find(m => m.id === activeMovieId); // finds the movie object in the movies array that matches the active movie id. 
+  // this is needed to get the description of the active movie to display it.
+
+ descriptionBox.innerHTML = `<p>${movie.description.replace(/\n/g, "<br>")}</p>`; /* sets the content of the description box to the description of the active movie. */
+  descriptionBox.classList.toggle("show"); // toggles the description box to show/hide the description.
+
   whereToWatchBox.classList.remove("show");
   listBox.classList.remove("show");
 });
 
-/* =======================
-   WHERE TO WATCH BUTTON
-======================= */
-whereToWatchBtn.addEventListener("click", () => {
-  if (!activeMovieId) return;
-  const movie = movies.find(m => m.id === activeMovieId);
-  whereToWatchBox.innerHTML = `<p>${movie.whereToWatch}</p>`;
-  whereToWatchBox.classList.toggle("show");
-  descriptionBox.classList.remove("show");
-  listBox.classList.remove("show");
-});
 
 /* =======================
-   SHOW LIST
+  Where To Watch BUTTON
 ======================= */
+
+whereToWatchBtn.addEventListener("click", () => { 
+  if (!activeMovieId) return;
+
+  const movie = movies.find(m => m.id === activeMovieId); // finds the movie object in the movies array that matches the active movie id. this is needed to get the whereToWatch info of the active movie to display it.
+
+  whereToWatchBox.innerHTML = `<p>${movie.whereToWatch}</p>`; // sets the content of the where to watch box to the whereToWatch property of the active movie. basically shows.
+  whereToWatchBox.classList.toggle("show");
+
+  descriptionBox.classList.remove("show"); // close description if open.
+  listBox.classList.remove("show"); // close other dropdowns if open.
+});
+
+
+/* =======================
+   SHOW LISTS
+======================= */
+
 myListBtn.addEventListener("click", () => {
   const favorites = getFromLocalStorage("favorites");
   const watched = getFromLocalStorage("watched");
 
-  listBox.innerHTML = "";
+  listBox.innerHTML = ""; // clear old content
 
+  // === Favorites Section ===
   const favTitle = document.createElement("h2");
   favTitle.textContent = "Favorites";
   listBox.appendChild(favTitle);
 
-  if (favorites.length === 0) listBox.innerHTML += "<p>No favorites yet.</p>";
-  else {
+  if (favorites.length === 0) {
+    listBox.innerHTML += "<p>No favorites yet.</p>";
+  } else {
     const favList = document.createElement("ul");
     favorites.forEach(id => {
       const movie = movies.find(m => m.id === id);
@@ -393,12 +516,14 @@ myListBtn.addEventListener("click", () => {
     listBox.appendChild(favList);
   }
 
+  // === Watched Section ===
   const watchedTitle = document.createElement("h2");
   watchedTitle.textContent = "To Be Watched";
   listBox.appendChild(watchedTitle);
 
-  if (watched.length === 0) listBox.innerHTML += "<p>No saved movies yet.</p>";
-  else {
+  if (watched.length === 0) {
+    listBox.innerHTML += "<p>No saved movies yet.</p>";
+  } else {
     const watchedList = document.createElement("ul");
     watched.forEach(id => {
       const movie = movies.find(m => m.id === id);
@@ -409,50 +534,60 @@ myListBtn.addEventListener("click", () => {
     listBox.appendChild(watchedList);
   }
 
+  // show panel
   listBox.classList.toggle("show");
+
+  // close others
   descriptionBox.classList.remove("show");
   whereToWatchBox.classList.remove("show");
 });
 
+
 /* =======================
    CLICK OUTSIDE CLOSE
 ======================= */
+
 document.addEventListener("pointerdown", (event) => {
-  const clickedInsideList = listBox.contains(event.target);
-  const clickedInsideDescription = descriptionBox.contains(event.target);
-  const clickedInsideWhere = whereToWatchBox.contains(event.target);
-  const clickedButton = event.target.closest(".buttons button");
+
+  const clickedInsideList = listBox.contains(event.target); // checks if the click was inside the list box. if it was, we don't want to close the dropdown.
+  const clickedInsideDescription = descriptionBox.contains(event.target); // checks if the click was inside the description box. if it was, we don't want to close the dropdown.
+  const clickedInsideWhere = whereToWatchBox.contains(event.target); 
+  const clickedButton = event.target.closest(".buttons button"); // same but for buttons. if click on button then no close.
 
   if (!clickedInsideList && !clickedInsideDescription && !clickedInsideWhere && !clickedButton) {
-    listBox.classList.remove("show");
-    descriptionBox.classList.remove("show");
-    whereToWatchBox.classList.remove("show");
-  }
+  listBox.classList.remove("show");
+  descriptionBox.classList.remove("show");
+  whereToWatchBox.classList.remove("show");
+}
 });
+
 </script>
 
+
 <style>
+
 #videoContainer {
   height: 100vh;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
+  
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background: #111;
+  align-items: center; /* center videos like a phone feed */
+  background: #111; /* optional dark background */
 }
 
 .video-wrapper {
   scroll-snap-align: start;
   position: relative;
-  width: 375px;
-  height: 900px;
-  margin: 20px 0;
-  border-radius: 300px;
-  overflow: hidden;
-  box-shadow: 0 0 40px rgba(0,0,0,0.6);
-  transition: transform 0.5s ease, opacity 0.5s ease;
+
+  width: 375px;       /* typical mobile width */
+  height: 667px;      /* typical mobile height */
+  margin: 20px 0;     /* space between “phone screens” */
+  border-radius: 30px; /* rounded edges like a phone */
+  overflow: hidden;   /* clip video edges */
+  box-shadow: 0 0 40px rgba(0,0,0,0.6); /* subtle floating effect */
 }
 
 video {
@@ -462,6 +597,8 @@ video {
   filter: brightness(0.85) contrast(1.05);
 }
 
+
+/* overlay title cinematic style */
 .movie-title {
   position: absolute;
   bottom: 60px;
@@ -474,14 +611,19 @@ video {
   z-index: 2;
 }
 
+/* =======================
+   BUTTONS CINEMATIC
+======================= */
 .buttons {
   position: fixed;
   top: 25px;
   left: 50%;
-  transform: translateX(-50%) scale(0.9);
+  transform: translateX(-50%);
   display: flex;
   gap: 30px;
   z-index: 9999;
+  transform: translateX(-50%) scale(0.9); /* optional scale for larger screens */
+
 }
 
 .buttons button {
@@ -498,9 +640,37 @@ video {
   transition: all 0.3s ease;
 }
 
-.buttons button:hover { background: rgba(255,255,255,0.2); }
-.buttons button.active { background: #e50914; border-color: #e50914; box-shadow: 0 0 20px rgba(229, 9, 20, 0.6); }
+.buttons button:hover {
+  background: rgba(255,255,255,0.2);
+}
 
+.buttons button.active {
+  background: #e50914;
+  border-color: #e50914;
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.6);
+}
+
+#listBox h2 {
+  margin-top: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+#listBox ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+#listBox li {
+  padding: 8px 0;
+  font-size: 25px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* =======================
+   DROPDOWNS CINEMATIC
+======================= */
 .dropdown {
   position: fixed;
   top: 80px;
@@ -520,20 +690,26 @@ video {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease;
+
   z-index: 9998;
   box-shadow: 0 0 40px rgba(0,0,0,0.8);
 }
 
-.dropdown.show { opacity: 1; visibility: visible; }
+.dropdown.show {
+  opacity: 1;
+  visibility: visible;
+}
 
-#listBox h2 { margin-top: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px; letter-spacing: 1px; }
-#listBox ul { list-style: none; padding-left: 0; }
-#listBox li { padding: 8px 0; font-size: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 
-#descriptionBox p { white-space: pre-wrap; }
+#descriptionBox p {
+  white-space: pre-wrap; /* preserves \n */
+}
+
 </style>
 </body>
+
 </html>
+
 
 
 
