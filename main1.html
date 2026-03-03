@@ -195,7 +195,9 @@ const getRecommendedMovies = () => {
   const recommended = movies.filter(movie => /* filters the movies to find recommendations. the criteria for recommendation is that the movie's genre is in the user's
    favorite genres and that the movie is not already in the favorites list. this ensures that we recommend movies that are similar
     to what the user likes but that they haven't already favorited. */
-    favoriteGenres.includes(movie.genre) && // checks if the movie's genre is in the list of favorite genres.
+    favoriteGenres.some(favGenre =>
+  movie.genre.includes(favGenre)
+) && // checks if the movie's genre is in the list of favorite genres.
     !favorites.includes(movie.id) // checks if the movie is not already in the favorites list.
   );
 
@@ -241,7 +243,8 @@ const listBox = document.getElementById("listBox");
 const loadAllTrailers = () => {
   videoContainer.innerHTML = ""; // clear existing content
 
-  movies.forEach(movie => {
+  const shuffledMovies = [...movies].sort(() => 0.5 - Math.random());
+   shuffledMovies.forEach(movie => {
     movie.trailers.forEach(trailerPath => {
       // create wrapper for cinematic effect
       const videoWrapper = document.createElement("div");
@@ -645,3 +648,4 @@ video {
 </body>
 
 </html>
+
