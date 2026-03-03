@@ -279,16 +279,12 @@ const loadAllTrailers = () => {
 };
 
 loadAllTrailers(); // initial load of trailers when page loads.
+setTimeout(() => {
+  loadAllTrailers();
+  attachObservers(); // <-- important
+  videoContainer.style.opacity = "1";
+}, 600);
 
-function triggerFeedUpdate() {
-  videoContainer.style.transition = "opacity 0.5s ease"; // fade out
-  videoContainer.style.opacity = "0";
-
-  setTimeout(() => {
-    loadAllTrailers();
-    videoContainer.style.opacity = "1"; // fade in
-  }, 500);
-}
 
 
 /* =======================
@@ -357,14 +353,14 @@ const triggerFeedUpdate = () => {
     videoContainer.style.opacity = "1";
 
   }, 600); // matches transition time
-  videoContainer.addEventListener("ended", (e) => {
+};
+
+videoContainer.addEventListener("ended", (e) => {
   if (e.target.tagName === "VIDEO" && pendingFeedUpdate) {
     pendingFeedUpdate = false;
     triggerFeedUpdate();
   }
 }, true);
-};
-
 
 /* =======================
    LOCAL STORAGE
@@ -588,6 +584,7 @@ document.addEventListener("pointerdown", (event) => {
   border-radius: 30px; /* rounded edges like a phone */
   overflow: hidden;   /* clip video edges */
   box-shadow: 0 0 40px rgba(0,0,0,0.6); /* subtle floating effect */
+  transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
 video {
@@ -709,6 +706,7 @@ video {
 </body>
 
 </html>
+
 
 
 
