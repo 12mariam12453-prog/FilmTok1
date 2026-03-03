@@ -277,6 +277,7 @@ const loadAllTrailers = () => {
   });
 };
 
+loadAllTrailers(); // initial load of trailers when page loads.
 document.querySelectorAll("video").forEach(video => {
   observer.observe(video);
 });
@@ -654,5 +655,6 @@ video {
 </body>
 
 </html>
+
 
 
