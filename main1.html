@@ -567,16 +567,17 @@ document.addEventListener("pointerdown", (event) => {
 /* Each video wrapper */
 .video-wrapper {
   position: relative;
-  width: 80%;        /* slightly smaller than full width for cinematic feel */
+  width: 90%;        /* controls the width of the video */
   max-width: 1280px;
   margin: 40px 0;
   scroll-snap-align: start; /* snap each video nicely */
 }
 
+/* Rectangular videos */
 video {
-  width: auto;
-  height: 80%;      /* maintain aspect ratio */
-  object-fit: cover;
+  width: 100%;
+  aspect-ratio: 16/9;    /* ensures rectangle shape */
+  object-fit: cover;     /* fills the rectangle nicely, cropping edges if needed */
   border-radius: 8px;
   filter: brightness(0.85) contrast(1.05);
 }
@@ -671,6 +672,7 @@ video {
 </style>
 </body>
 </html>
+
 
 
 
