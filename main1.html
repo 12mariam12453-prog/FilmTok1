@@ -548,55 +548,116 @@ document.addEventListener("pointerdown", (event) => {
 }
 });
 
+/* =======================
+   Swipe Detection for Mobile
+======================= */
+
+let startY = 0;
+let endY = 0;
+
+videoContainer.addEventListener("touchstart", (e) => {
+  startY = e.touches[0].clientY;
+});
+
+videoContainer.addEventListener("touchend", (e) => {
+  endY = e.changedTouches[0].clientY;
+
+  const diff = startY - endY;
+
+  if (Math.abs(diff) > 50) {
+    const videos = [...document.querySelectorAll(".video-wrapper")];
+    const currentIndex = videos.findIndex(v =>
+      v.getBoundingClientRect().top >= 0 &&
+      v.getBoundingClientRect().top < window.innerHeight / 2
+    );
+
+    if (diff > 0 && currentIndex < videos.length - 1) {
+      // swipe up
+      videos[currentIndex + 1].scrollIntoView({ behavior: "smooth" });
+    } else if (diff < 0 && currentIndex > 0) {
+      // swipe down
+      videos[currentIndex - 1].scrollIntoView({ behavior: "smooth" });
+    }
+  }
+});
+
 </script>
 
 
 <style>
   
-#videoContainer {
-  height: 100%;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-  display: flex; 
-  flex-direction: column;
-  align-items: center;
-  background: linear-gradient(180deg, #111 0%, #222 100%); /* cinematic gradient */
-  padding: 40px 0; /* adds some space top/bottom */
-}
-
-  .video-wrapper {
-  height: 100vh;              /* full screen height */
-  width: 100vw;               /* full screen width */
-  scroll-snap-align: start;   /* each video snaps */
-  position: relative;
-}
-
-video {
-  height: 100%;
-  width: 100%;
-  object-fit: fit;          /* fills entire screen */
-}
-
-/* overlay title cinematic style */
-.movie-title {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  font-size: 28px;
-  font-weight: bold;
-  color: #fff;
-  letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(0,0,0,0.8);
-  z-index: 2;
-  max-width: 90%;  /* prevents overlapping text */
-  white-space: nowrap;
+/* =======================
+   GLOBAL CINEMATIC THEME
+======================= */
+body {
+  margin: 0;
+  background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+  font-family: 'Segoe UI', sans-serif;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* =======================
-   BUTTONS CINEMATIC
+   VIDEO FEED
+======================= */
+#videoContainer {
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+/* each video section */
+.video-wrapper {
+  transition: transform 0.6s ease;
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  scroll-snap-align: start;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle, #111 0%, #000 100%);
+}
+
+.video-wrapper:hover video {
+  transform: scale(1.05);
+}
+
+/* video full cinematic */
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.75) contrast(1.15) saturate(1.1);
+}
+
+/* dark overlay for readability */
+.video-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent 40%);
+}
+
+/* =======================
+   MOVIE TITLE
+======================= */
+.movie-title {
+  position: absolute;
+  bottom: 80px;
+  left: 60px;
+  font-size: 42px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 3px;
+  text-shadow:
+    0 0 10px rgba(0,0,0,0.9),
+    0 0 25px rgba(0,0,0,0.8);
+  z-index: 2;
+}
+
+/* =======================
+   BUTTON BAR (GLASS STYLE)
 ======================= */
 .buttons {
   position: fixed;
@@ -604,84 +665,105 @@ video {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 20px;
-  z-index: 1000;
+  gap: 15px;
+  padding: 8px 18px;
+  border-radius: 40px;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255,255,255,0.1);
+  z-index: 9999;
 }
 
+/* buttons */
 .buttons button {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
-  padding: 8px 16px;   /* smaller */
-  font-size: 18px;      /* smaller */
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.8);
+  padding: 8px 16px;
+  font-size: 14px;
   letter-spacing: 1px;
-  text-transform: uppercase;
-  border-radius: 50px;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
+/* hover glow */
 .buttons button:hover {
-  background: rgba(255,255,255,0.2);
+  color: white;
+  background: rgba(255,255,255,0.1);
 }
 
+/* active = RED CINEMA GLOW */
 .buttons button.active {
   background: #e50914;
-  border-color: #e50914;
-  box-shadow: 0 0 20px rgba(229, 9, 20, 0.6);
+  color: white;
+  box-shadow: 0 0 15px rgba(229, 9, 20, 0.7);
 }
 
-/* Keep dropdowns same cinematic style */
+/* =======================
+   DROPDOWN PANELS
+======================= */
 .dropdown {
   position: fixed;
   top: 70px;
   left: 50%;
-  transform: translateX(-50%);
-  width: 50%;
-  max-width: 1200px;
-  max-height: 80vh;
+  transform: translateX(-50%) scale(0.95);
+  width: 80%;
+  max-width: 1000px;
+  max-height: 75vh;
   overflow-y: auto;
-  background: rgba(0,0,0,0.85);
+
+  background: rgba(10,10,10,0.9);
   backdrop-filter: blur(20px);
-  border-radius: 12px;
-  padding: 30px;
-  color: white;
-  font-size: 22px;
-  line-height: 1.8;
+  border-radius: 16px;
+  padding: 25px;
+
+  color: #eee;
+  font-size: 18px;
+  line-height: 1.6;
+
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
+
+  box-shadow: 0 0 50px rgba(0,0,0,0.9);
+  border: 1px solid rgba(255,255,255,0.08);
   z-index: 9998;
-  box-shadow: 0 0 40px rgba(0,0,0,0.8);
 }
 
 .dropdown.show {
   opacity: 1;
   visibility: visible;
+  transform: translateX(-50%) scale(1);
 }
 
-#descriptionBox p {
-  white-space: pre-wrap; /* preserves \n */
+/* =======================
+   LIST STYLING
+======================= */
+#listBox h2 {
+  margin-top: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 6px;
+  font-size: 20px;
+  letter-spacing: 1px;
 }
-  
+
+#listBox li {
+  padding: 6px 0;
+  font-size: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* =======================
+   DESCRIPTION TEXT
+======================= */
+#descriptionBox p {
+  white-space: pre-wrap;
+}
+
 </style>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
