@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8"> <!-- character encoding -->
 <title>Movie App</title>
 </head>
 
@@ -9,13 +9,15 @@
 
 <div id="videoContainer"></div> <!-- so detect later on -->
 
-<div class="buttons">
+<div class="buttons"> <!-- button container for styling -->
   <button class="My-List">My List</button>
   <button class="To-Be-Watched">To Be Watched</button>
   <button class="Favorites">Favorites</button>
   <button class="Description">Description</button>
   <button class="Where-To-Watch">Where To Watch</button>
-</div>
+  <button id="searchBtn">🔍</button>
+<input type="text" id="searchInput" placeholder="Search movies..." />
+</div> 
 
 <div id="descriptionBox" class="dropdown"></div>
 <div id="whereToWatchBox" class="dropdown"></div>
@@ -177,17 +179,22 @@ const getFavorites = () => {
 this is used to check if a movie is already in favorites and to display the list of favorites. */
 
 
-const getRecommendedMovies = () => {
-  const favorites = getFavorites(); 
+const getRecommendedMovies = () => { /* this function generates a list of recommended movies based on the user's favorites. 
+ it looks at the genres of the movies in the favorites list and recommends movies that share those genres. if there are no favorites, it returns a random list of movies. */
+  
+ const favorites = getFavorites(); // get current favorites list from local storage.
 
   if (favorites.length === 0) {
-    return [...movies].sort(() => 0.5 - Math.random());
-  }
+    return [...movies].sort(() => 0.5 - Math.random()); 
+  } /* if there are no favorites, it returns a random list of movies. this is done by creating a copy of the movies array and sorting it randomly. 
+  this ensures that the user sees a different order of movies each time they visit the site or clear their favorites. */
 
-  // Get all individual genres from favorites
-  const favoriteGenres = movies
-    .filter(movie => favorites.includes(movie.id))
-    .flatMap(movie => movie.genre.split(",").map(g => g.trim()));
+ 
+  const favoriteGenres = movies // this starts with the movies array which contains all the movie objects.
+    .filter(movie => favorites.includes(movie.id)) // this filters the movies array to only include movies that are in the favorites list. 
+    // it checks if the movie id is included in the favorites array.
+    .flatMap(movie => movie.genre.split(",").map(g => g.trim())); // this creates an array of genres from the favorite movies.
+    //  it splits the genre string by comma and trims any extra whitespace.
 
   // Recommend movies that share ANY genre
   const recommended = movies.filter(movie => {
@@ -197,9 +204,10 @@ const getRecommendedMovies = () => {
            !favorites.includes(movie.id);
   });
 
-  return recommended.length > 0
-  ? recommended.sort(() => 0.5 - Math.random())
-  : [...movies].sort(() => 0.5 - Math.random());
+  return recommended.length > 0 // if there are recommended movies based on favorites, return those in random order. if not, return a random list of all movies.
+  ? recommended.sort(() => 0.5 - Math.random()) // this sorts the recommended movies randomly.
+  : [...movies].sort(() => 0.5 - Math.random()); // fallback to random order of all movies if no recommendations based on favorites. this ensures that the user always sees a varied selection of movies,
+  //  even if their favorites don't have clear genre matches.
 };
 
 
@@ -208,7 +216,7 @@ const getRecommendedMovies = () => {
 ======================= */
 
 // FIRST TIME ALERT 
-// criteria: visual appeal.
+// criteria: navigation.
 if (!localStorage.getItem("introAlertShown")) { // checks if alert hasn't been shown before. if not it shows alert.
   alert(
     "⚠️ IMPORTANT:\n\n" +
@@ -219,260 +227,195 @@ if (!localStorage.getItem("introAlertShown")) { // checks if alert hasn't been s
   localStorage.setItem("introAlertShown", "true"); // next time user open alert not shown.
 }
 
+let activeMovieId = null;
+const videoContainer = document.getElementById("videoContainer");
 
-let activeMovieId = null; // tracks which movie is currently active/selected. This is crucial for button actions and description display.
-const videoContainer = document.getElementById("videoContainer"); // finds element.
-let pendingFeedUpdate = false; // track if feed should update after trailer ends
-
-// detect so can control them later on.
 const myListBtn = document.querySelector(".My-List");
 const favoritesBtn = document.querySelector(".Favorites");
 const watchedBtn = document.querySelector(".To-Be-Watched");
 const descriptionBtn = document.querySelector(".Description");
-const descriptionBox = document.getElementById("descriptionBox");
 const whereToWatchBtn = document.querySelector(".Where-To-Watch");
+
+const descriptionBox = document.getElementById("descriptionBox");
 const whereToWatchBox = document.getElementById("whereToWatchBox");
 const listBox = document.getElementById("listBox");
 
+const searchBtn = document.getElementById("searchBtn");
+const searchInput = document.getElementById("searchInput");
 
 /* =======================
-   LOAD ALL TRAILERS
+   LOAD TRAILERS
 ======================= */
 
-const loadAllTrailers = () => {
+
+const loadAllTrailers = (searchQuery = "") => {
   videoContainer.innerHTML = "";
 
-  const recommendedMovies = getRecommendedMovies();
+  const moviesToShow = getRecommendedMovies().filter(movie =>
+    movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  recommendedMovies.forEach(movie => {
-    movie.trailers.forEach(trailerPath => {
+  moviesToShow.forEach(movie => {
+    movie.trailers.forEach(src => {
 
-      const videoWrapper = document.createElement("div");
-      videoWrapper.classList.add("video-wrapper");
+      const wrapper = document.createElement("div");
+      wrapper.className = "video-wrapper";
 
       const video = document.createElement("video");
-      video.autoplay = true;
-      video.playsInline = true;
-      video.src = trailerPath;
+      video.src = src;
       video.controls = true;
       video.dataset.movieId = movie.id;
 
-      videoWrapper.appendChild(video);
+      video.addEventListener("play", () => {
+        activeMovieId = movie.id;
+        updateButtonStates();
+      });
 
-      const titleOverlay = document.createElement("div");
-      titleOverlay.classList.add("movie-title");
-      titleOverlay.textContent = movie.title;
+      const vignette = document.createElement("div");
+      vignette.className = "vignette";
 
-      videoWrapper.appendChild(titleOverlay);
-      videoContainer.appendChild(videoWrapper);
+      const title = document.createElement("div");
+      title.className = "movie-title";
+      title.textContent = movie.title;
+
+      wrapper.append(video, vignette, title);
+      videoContainer.appendChild(wrapper);
     });
   });
 };
 
-loadAllTrailers(); // initial load of trailers when page loads.
-
-const attachObservers = () => {
-  document.querySelectorAll("video").forEach(video => observer.observe(video));
-}; 
-
-setTimeout(() => {
-  loadAllTrailers();
-  attachObservers(); // <-- important
-  videoContainer.style.opacity = "1";
-}, 600);
-
-
-
 /* =======================
-   SELECT ACTIVE MOVIE
+   CENTERED AUTOPLAY
 ======================= */
 
-// on mobile, use play event instead of click for touch devices
-videoContainer.addEventListener("play", (e) => {
-  if (e.target.tagName === "VIDEO") {
-    activeMovieId = e.target.dataset.movieId;
-    updateButtonStates(); // update visual states
-  }
-}, true);
+const playCenteredVideo = () => {
+  const videos = document.querySelectorAll("video");
 
-videoContainer.addEventListener("ended", (e) => {
-  if (e.target.tagName === "VIDEO") {
-    triggerFeedUpdate();
-  }
-}, true);
+  let closest = null;
+  let closestDistance = Infinity;
+  const center = window.innerHeight / 2;
 
+  videos.forEach(video => {
+    const rect = video.getBoundingClientRect();
+    const videoCenter = rect.top + rect.height / 2;
+    const distance = Math.abs(center - videoCenter);
 
-/* ===========================
-   AUTO PAUSE WHEN OUT OF VIEW
-  ============================ */
-
-// create observer
-const observer = new IntersectionObserver((entries) => { // detects elements in viewport or out.
-
-  entries.forEach(entry => { // loop through observed entries (videos)
-
-    const video = entry.target; // the video element being observed 
-
-    if (entry.isIntersecting) {
-  video.play();
-} else {
-  video.pause(); // pause when out of view
-}
-
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closest = video;
+    }
   });
 
-}, {
-  threshold: 0.6 // 60% of video must be visible
-});
-
-
-const triggerFeedUpdate = () => {
-
-  // fade out container
-  videoContainer.style.transition = "opacity 0.6s ease";
-  videoContainer.style.opacity = "0"; // fade out for smooth transition when loading new trailers.
-
-  setTimeout(() => { // wait for fade out to finish before loading new trailers.
-
-    loadAllTrailers();
-
-    // re-attach observer to new videos
-    document.querySelectorAll("video").forEach(video => {
-      observer.observe(video);
-    });
-
-    // fade back in
-    videoContainer.style.opacity = "1";
-
-  }, 600); // matches transition time
-  
-  // observe every video after loading
-document.querySelectorAll("video").forEach(video => {
-  observer.observe(video);
-});
+  videos.forEach(video => {
+    if (video === closest) {
+      if (video.paused) video.play();
+    } else {
+      video.pause();
+    }
+  });
 };
 
+videoContainer.addEventListener("scroll", playCenteredVideo);
 
 /* =======================
-   LOCAL STORAGE
+   SEARCH
 ======================= */
 
-const saveToLocalStorage = (key, value) => { // value is movie id. key is either favorites or watched. This adds to local storage without overwriting existing data.
-  const existing = JSON.parse(localStorage.getItem(key)) || []; // reads data.
+searchBtn.addEventListener("click", () => {
+  searchInput.classList.toggle("active");
+  searchInput.focus();
+});
 
-  if (!existing.includes(value)) { // only add if not already there.
-    existing.push(value); // adds new value to array.
-    localStorage.setItem(key, JSON.stringify(existing)); // saves back to local storage.
+searchInput.addEventListener("input", e => {
+  loadAllTrailers(e.target.value);
+  setTimeout(playCenteredVideo, 200);
+});
+
+/* =======================
+   LOCAL STORAGE HELPERS
+======================= */
+
+const getFromLocalStorage = key =>
+  JSON.parse(localStorage.getItem(key)) || [];
+
+const saveToLocalStorage = (key, value) => {
+  const data = getFromLocalStorage(key);
+  if (!data.includes(value)) {
+    data.push(value);
+    localStorage.setItem(key, JSON.stringify(data));
   }
 };
 
 const removeFromLocalStorage = (key, value) => {
-  let existing = JSON.parse(localStorage.getItem(key)) || []; /* reads data from local storage. if there is no data, it returns an empty array.
-   this is used to get the current list of favorites or watched movies so we can remove a movie from that list when unfavoriting or marking as unwatched. */
-  existing = existing.filter(item => item !== value); // removes the value from the array.
-  localStorage.setItem(key, JSON.stringify(existing)); /* saves the updated array back to local storage. this is used to update the favorites or watched list
-   in local storage after removing a movie from it.*/
+  const data = getFromLocalStorage(key).filter(v => v !== value);
+  localStorage.setItem(key, JSON.stringify(data));
 };
-
-const getFromLocalStorage = (key) => { 
-  return JSON.parse(localStorage.getItem(key)) || []; /* this is a helper function to get data from local storage. 
-  it takes a key (favorites or watched) and returns the corresponding list of movie ids.*/
-};
-
 
 /* =======================
-   BUTTON STATE UPDATE
+   BUTTON STATES
 ======================= */
 
 const updateButtonStates = () => {
-  if (!activeMovieId) return; // if no active movie, do nothing. this prevents errors when clicking buttons without selecting a movie first.
+  if (!activeMovieId) return;
 
-  const favorites = getFromLocalStorage("favorites"); // gets current favorites list from local storage.
-  const watched = getFromLocalStorage("watched");
+  favoritesBtn.classList.toggle(
+    "active",
+    getFromLocalStorage("favorites").includes(activeMovieId)
+  );
 
-  // toggle active class based on whether active movie is in favorites/watched lists. visuals criteria, smooth.
-  favoritesBtn.classList.toggle("active", favorites.includes(activeMovieId)); // if active movie is in favorites, add active class. if not, remove it.
-  watchedBtn.classList.toggle("active", watched.includes(activeMovieId));
+  watchedBtn.classList.toggle(
+    "active",
+    getFromLocalStorage("watched").includes(activeMovieId)
+  );
 };
 
-
 /* =======================
-   FAVORITES BUTTON
+   BUTTON ACTIONS
 ======================= */
 
-
-/* when favorites button is clicked, it checks if there is an active movie. if there is, it gets the current list of favorites from local storage. 
-then it checks if the active movie is already in the favorites list. if it is, it removes it (unfavorite). if it's not, it adds it to the list (favorite).*/
-
-favoritesBtn.addEventListener("click", () => { 
-  if (!activeMovieId) return; // if no active movie, do nothing.
-
-  const favorites = getFromLocalStorage("favorites"); // gets current favorites list from local storage.
-
-  if (favorites.includes(activeMovieId)) { // if already in favorites, remove it (unfavorite).
-    removeFromLocalStorage("favorites", activeMovieId);
-  } else {
-    saveToLocalStorage("favorites", activeMovieId); 
-  }
-
-  updateButtonStates(); // update button states to reflect the change in favorites.
-  pendingFeedUpdate = true; // wait until trailer ends to update feed
-});
-
-
-/* =======================
-   WATCHED BUTTON
-======================= */
-
-watchedBtn.addEventListener("click", () => { 
+favoritesBtn.onclick = () => {
   if (!activeMovieId) return;
-
-  const watched = getFromLocalStorage("watched");
-
-  if (watched.includes(activeMovieId)) {
-    removeFromLocalStorage("watched", activeMovieId);
-  } else {
-    saveToLocalStorage("watched", activeMovieId);
-  }
-
+  const favs = getFromLocalStorage("favorites");
+  favs.includes(activeMovieId)
+    ? removeFromLocalStorage("favorites", activeMovieId)
+    : saveToLocalStorage("favorites", activeMovieId);
   updateButtonStates();
-});
+};
 
-
-/* =======================
-   DESCRIPTION BUTTON
-======================= */
-
-descriptionBtn.addEventListener("click", () => { /* when description button is clicked, it checks if there is an active movie. if there is, 
-  it finds the movie object based on the active movie id.*/
-  if (!activeMovieId) return; // if no active movie, do nothing.
-
-  const movie = movies.find(m => m.id === activeMovieId); // finds the movie object in the movies array that matches the active movie id. 
-  // this is needed to get the description of the active movie to display it.
-
- descriptionBox.innerHTML = `<p>${movie.description.replace(/\n/g, "<br>")}</p>`; /* sets the content of the description box to the description of the active movie. */
-  descriptionBox.classList.toggle("show"); // toggles the description box to show/hide the description.
-
-  whereToWatchBox.classList.remove("show");
-  listBox.classList.remove("show");
-});
-
-
-/* =======================
-  Where To Watch BUTTON
-======================= */
-
-whereToWatchBtn.addEventListener("click", () => { 
+watchedBtn.onclick = () => {
   if (!activeMovieId) return;
+  const list = getFromLocalStorage("watched");
+  list.includes(activeMovieId)
+    ? removeFromLocalStorage("watched", activeMovieId)
+    : saveToLocalStorage("watched", activeMovieId);
+  updateButtonStates();
+};
 
-  const movie = movies.find(m => m.id === activeMovieId); // finds the movie object in the movies array that matches the active movie id. this is needed to get the whereToWatch info of the active movie to display it.
+descriptionBtn.onclick = () => {
+  if (!activeMovieId) return;
+  const movie = movies.find(m => m.id === activeMovieId);
+  descriptionBox.innerHTML = movie.description.replace(/\n/g, "<br>");
+  descriptionBox.classList.toggle("show");
+  whereToWatchBox.classList.remove("show");
+};
 
-  whereToWatchBox.innerHTML = `<p>${movie.whereToWatch}</p>`; // sets the content of the where to watch box to the whereToWatch property of the active movie. basically shows.
+whereToWatchBtn.onclick = () => {
+  if (!activeMovieId) return;
+  const movie = movies.find(m => m.id === activeMovieId);
+  whereToWatchBox.innerHTML = movie.whereToWatch;
   whereToWatchBox.classList.toggle("show");
+  descriptionBox.classList.remove("show");
+};
 
-  descriptionBox.classList.remove("show"); // close description if open.
-  listBox.classList.remove("show"); // close other dropdowns if open.
-});
+/* =======================
+   INITIAL LOAD
+======================= */
+
+setTimeout(() => {
+  loadAllTrailers();
+  playCenteredVideo();
+}, 500);
+
 
 
 /* =======================
@@ -551,6 +494,7 @@ document.addEventListener("pointerdown", (event) => {
 </script>
 
 
+
 <style>
   
 /* =======================
@@ -558,9 +502,21 @@ document.addEventListener("pointerdown", (event) => {
 ======================= */
 body {
   margin: 0;
-  background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+  background: radial-gradient(circle at center, #0d0d0d 0%, #000 100%);
   font-family: 'Segoe UI', sans-serif;
   overflow: hidden;
+  color: white;
+}
+
+/* 🎞️ FILM GRAIN */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: url("https://www.transparenttextures.com/patterns/asfalt-light.png");
+  opacity: 0.08;
+  z-index: 9999;
 }
 
 /* =======================
@@ -573,7 +529,7 @@ body {
   scroll-behavior: smooth;
 }
 
-/* each video section */
+/* each video */
 .video-wrapper {
   position: relative;
   height: 100vh;
@@ -582,23 +538,51 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle, #111 0%, #000 100%);
+  background: black;
 }
 
-/* video full cinematic */
+/* 🎬 LETTERBOX (cinema bars) */
+.video-wrapper::before,
+.video-wrapper::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 12%;
+  background: #000;
+  z-index: 3;
+}
+
+.video-wrapper::before { top: 0; }
+.video-wrapper::after { bottom: 0; }
+
+/* 🎞️ VIGNETTE */
+.video-wrapper .vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.85));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 🎥 VIDEO LOOK */
 video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.75) contrast(1.15) saturate(1.1);
+
+  filter:
+    brightness(0.65)
+    contrast(1.25)
+    saturate(1.2)
+    sepia(0.08);
+
+  transition: transform 0.6s ease, filter 0.6s ease, opacity 0.4s ease;
 }
 
-/* dark overlay for readability */
-.video-wrapper::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent 40%);
+/* subtle cinematic motion */
+video:playing {
+  transform: scale(1.03);
 }
 
 /* =======================
@@ -606,20 +590,24 @@ video {
 ======================= */
 .movie-title {
   position: absolute;
-  bottom: 80px;
+  bottom: 100px;
   left: 60px;
-  font-size: 42px;
-  font-weight: 700;
-  color: white;
-  letter-spacing: 3px;
+
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: 4px;
+
+  color: #f5c518;
+
   text-shadow:
     0 0 10px rgba(0,0,0,0.9),
-    0 0 25px rgba(0,0,0,0.8);
-  z-index: 2;
+    0 0 30px rgba(0,0,0,1);
+
+  z-index: 4;
 }
 
 /* =======================
-   BUTTON BAR (GLASS STYLE)
+   BUTTON BAR
 ======================= */
 .buttons {
   position: fixed;
@@ -630,13 +618,14 @@ video {
   gap: 15px;
   padding: 8px 18px;
   border-radius: 40px;
-  background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255,255,255,0.1);
+
+  background: rgba(10,10,10,0.7);
+  backdrop-filter: blur(25px);
+
+  border: 1px solid rgba(255,255,255,0.08);
   z-index: 9999;
 }
 
-/* buttons */
 .buttons button {
   background: transparent;
   border: none;
@@ -649,21 +638,19 @@ video {
   transition: all 0.25s ease;
 }
 
-/* hover glow */
 .buttons button:hover {
   color: white;
   background: rgba(255,255,255,0.1);
 }
 
-/* active = RED CINEMA GLOW */
 .buttons button.active {
-  background: #e50914;
+  background: linear-gradient(135deg, #e50914, #b20710);
   color: white;
-  box-shadow: 0 0 15px rgba(229, 9, 20, 0.7);
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.8);
 }
 
 /* =======================
-   DROPDOWN PANELS
+   DROPDOWNS
 ======================= */
 .dropdown {
   position: fixed;
@@ -675,8 +662,8 @@ video {
   max-height: 75vh;
   overflow-y: auto;
 
-  background: rgba(10,10,10,0.9);
-  backdrop-filter: blur(20px);
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(25px);
   border-radius: 16px;
   padding: 25px;
 
@@ -700,53 +687,64 @@ video {
 }
 
 /* =======================
-   LIST STYLING
+   LISTS
 ======================= */
 #listBox h2 {
   margin-top: 20px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
   padding-bottom: 6px;
-  font-size: 20px;
-  letter-spacing: 1px;
 }
 
 #listBox li {
   padding: 6px 0;
-  font-size: 16px;
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 /* =======================
-   DESCRIPTION TEXT
+   MOBILE
 ======================= */
-#descriptionBox p {
-  white-space: pre-wrap;
+@media (max-width: 600px) {
+  .movie-title {
+    font-size: 24px;
+    left: 20px;
+    bottom: 80px;
+  }
+
+  .buttons button {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .dropdown {
+    width: 95%;
+    font-size: 14px;
+  }
 }
 
+#searchBtn {
+  font-size: 16px;
+}
+
+/* hidden by default */
+#searchInput {
+  width: 0;
+  opacity: 0;
+  border: none;
+  outline: none;
+
+  background: transparent;
+  color: white;
+
+  transition: all 0.3s ease;
+}
+
+/* expanded state */
+#searchInput.active {
+  width: 180px;
+  opacity: 1;
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.5);
+}
 </style>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
